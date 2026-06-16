@@ -6,3 +6,261 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id           BigInt    @id @default(autoincrement())
+  openid       String    @unique @db.VarChar(100)
+  unionid      String?   @db.VarChar(100)
+  nickname     String?   @db.VarChar(100)
+  avatarUrl    String?   @map("avatar_url") @db.VarChar(500)
+  currentLevel String    @default("N5") @map("current_level") @db.VarChar(10)
+  status       String    @default("active") @db.VarChar(20)
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  practiceRecords   PracticeRecord[]
+  answerRecords     AnswerRecord[]
+  wrongQuestions    WrongQuestion[]
+  favoriteQuestions FavoriteQuestion[]
+  feedbacks         Feedback[]
+  dailyStats        UserDailyStat[]
+
+  @@index([currentLevel])
+  @@map("users")
+}
+
+model Admin {
+  id           BigInt    @id @default(autoincrement())
+  username     String    @unique @db.VarChar(100)
+  passwordHash String    @map("password_hash") @db.VarChar(255)
+  role         String    @default("editor") @db.VarChar(30)
+  status       String    @default("active") @db.VarChar(20)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  @@index([role])
+  @@map("admins")
+}
+
+model Question {
+  id              BigInt    @id @default(autoincrement())
+  level           String    @db.VarChar(10)
+  category        String    @db.VarChar(30)
+  type            String    @db.VarChar(30)
+  stem            String    @db.Text
+  passage         String?   @db.Text
+  translation     String?   @db.Text
+  explanation     String    @db.Text
+  answer          String    @db.VarChar(20)
+  difficulty      Int       @default(1) @db.TinyInt
+  audioUrl        String?   @map("audio_url") @db.VarChar(500)
+  audioText       String?   @map("audio_text") @db.Text
+  imageUrl        String?   @map("image_url") @db.VarChar(500)
+  sourceType      String    @map("source_type") @db.VarChar(30)
+  sourceRemark    String?   @map("source_remark") @db.VarChar(500)
+  copyrightStatus String    @default("clear") @map("copyright_status") @db.VarChar(30)
+  status          String    @default("draft") @db.VarChar(30)
+  rejectReason    String?   @map("reject_reason") @db.VarChar(500)
+  createdBy       BigInt?   @map("created_by")
+  reviewedBy      BigInt?   @map("reviewed_by")
+  reviewedAt      DateTime? @map("reviewed_at")
+  publishedAt     DateTime? @map("published_at")
+  totalAttempts   Int       @default(0) @map("total_attempts")
+  correctAttempts Int       @default(0) @map("correct_attempts")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  options           QuestionOption[]
+  questionTags      QuestionTag[]
+  answerRecords     AnswerRecord[]
+  wrongQuestions    WrongQuestion[]
+  favoriteQuestions FavoriteQuestion[]
+  feedbacks         Feedback[]
+
+  @@index([level, category])
+  @@index([type])
+  @@index([status])
+  @@index([difficulty])
+  @@index([sourceType])
+  @@index([deletedAt])
+  @@map("questions")
+}
+
+model QuestionOption {
+  id         BigInt   @id @default(autoincrement())
+  questionId BigInt   @map("question_id")
+  optionKey  String   @map("option_key") @db.VarChar(10)
+  optionText String   @map("option_text") @db.Text
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  question Question @relation(fields: [questionId], references: [id])
+
+  @@unique([questionId, optionKey])
+  @@index([questionId])
+  @@map("question_options")
+}
+
+model Tag {
+  id          BigInt    @id @default(autoincrement())
+  name        String    @unique @db.VarChar(100)
+  category    String?   @db.VarChar(30)
+  description String?   @db.VarChar(500)
+  status      String    @default("active") @db.VarChar(20)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  questionTags QuestionTag[]
+
+  @@index([category])
+  @@map("tags")
+}
+
+model QuestionTag {
+  id         BigInt   @id @default(autoincrement())
+  questionId BigInt   @map("question_id")
+  tagId      BigInt   @map("tag_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  question Question @relation(fields: [questionId], references: [id])
+  tag      Tag      @relation(fields: [tagId], references: [id])
+
+  @@unique([questionId, tagId])
+  @@index([tagId])
+  @@map("question_tags")
+}
+
+model PracticeRecord {
+  id              BigInt    @id @default(autoincrement())
+  userId          BigInt    @map("user_id")
+  level           String    @db.VarChar(10)
+  category        String    @db.VarChar(30)
+  mode            String    @db.VarChar(30)
+  totalCount      Int       @default(0) @map("total_count")
+  correctCount    Int       @default(0) @map("correct_count")
+  wrongCount      Int       @default(0) @map("wrong_count")
+  accuracy        Decimal   @default(0) @db.Decimal(5, 2)
+  durationSeconds Int       @default(0) @map("duration_seconds")
+  status          String    @default("in_progress") @db.VarChar(20)
+  startedAt       DateTime  @default(now()) @map("started_at")
+  finishedAt      DateTime? @map("finished_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  user          User           @relation(fields: [userId], references: [id])
+  answerRecords AnswerRecord[]
+
+  @@index([userId])
+  @@index([level, category])
+  @@index([mode])
+  @@index([createdAt])
+  @@map("practice_records")
+}
+
+model AnswerRecord {
+  id               BigInt   @id @default(autoincrement())
+  practiceRecordId BigInt   @map("practice_record_id")
+  userId           BigInt   @map("user_id")
+  questionId       BigInt   @map("question_id")
+  selectedAnswer   String   @map("selected_answer") @db.VarChar(20)
+  correctAnswer    String   @map("correct_answer") @db.VarChar(20)
+  isCorrect        Boolean  @map("is_correct")
+  durationSeconds  Int      @default(0) @map("duration_seconds")
+  answeredAt       DateTime @default(now()) @map("answered_at")
+
+  practiceRecord PracticeRecord @relation(fields: [practiceRecordId], references: [id])
+  user           User           @relation(fields: [userId], references: [id])
+  question       Question       @relation(fields: [questionId], references: [id])
+
+  @@index([practiceRecordId])
+  @@index([userId])
+  @@index([questionId])
+  @@index([answeredAt])
+  @@map("answer_records")
+}
+
+model WrongQuestion {
+  id              BigInt    @id @default(autoincrement())
+  userId          BigInt    @map("user_id")
+  questionId      BigInt    @map("question_id")
+  wrongCount      Int       @default(1) @map("wrong_count")
+  lastWrongAnswer String?   @map("last_wrong_answer") @db.VarChar(20)
+  mastered        Boolean   @default(false)
+  firstWrongAt    DateTime  @default(now()) @map("first_wrong_at")
+  lastWrongAt     DateTime  @default(now()) @map("last_wrong_at")
+  masteredAt      DateTime? @map("mastered_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  user     User     @relation(fields: [userId], references: [id])
+  question Question @relation(fields: [questionId], references: [id])
+
+  @@unique([userId, questionId])
+  @@index([userId])
+  @@index([questionId])
+  @@index([mastered])
+  @@index([lastWrongAt])
+  @@map("wrong_questions")
+}
+
+model FavoriteQuestion {
+  id         BigInt   @id @default(autoincrement())
+  userId     BigInt   @map("user_id")
+  questionId BigInt   @map("question_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User     @relation(fields: [userId], references: [id])
+  question Question @relation(fields: [questionId], references: [id])
+
+  @@unique([userId, questionId])
+  @@index([userId])
+  @@index([questionId])
+  @@map("favorite_questions")
+}
+
+model Feedback {
+  id            BigInt    @id @default(autoincrement())
+  userId        BigInt    @map("user_id")
+  questionId    BigInt?   @map("question_id")
+  type          String    @db.VarChar(50)
+  content       String    @db.Text
+  status        String    @default("pending") @db.VarChar(30)
+  handlerId     BigInt?   @map("handler_id")
+  handlerRemark String?   @map("handler_remark") @db.VarChar(500)
+  handledAt     DateTime? @map("handled_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  user     User      @relation(fields: [userId], references: [id])
+  question Question? @relation(fields: [questionId], references: [id])
+
+  @@index([userId])
+  @@index([questionId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("feedback")
+}
+
+model UserDailyStat {
+  id              BigInt   @id @default(autoincrement())
+  userId          BigInt   @map("user_id")
+  statDate        DateTime @map("stat_date") @db.Date
+  answeredCount   Int      @default(0) @map("answered_count")
+  correctCount    Int      @default(0) @map("correct_count")
+  wrongCount      Int      @default(0) @map("wrong_count")
+  durationSeconds Int      @default(0) @map("duration_seconds")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, statDate])
+  @@index([statDate])
+  @@map("user_daily_stats")
+}

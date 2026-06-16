@@ -64,6 +64,7 @@ export interface Question {
   explanation?: string;
   translation?: string;
   audioUrl?: string;
+  audioText?: string;
   difficulty: 1 | 2 | 3 | 4 | 5;
   tags: string[];
   sourceType?: SourceType;

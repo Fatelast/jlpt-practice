@@ -72,3 +72,24 @@ npm run dev
 8. 题目反馈
 9. 部署配置
 10. 上线前检查
+
+## 后端基础验证
+
+```bash
+npm install
+npm run prisma:generate
+npm run prisma:validate
+npm run build:server
+npm run typecheck:server
+npm run test:server
+```
+
+数据库迁移和种子数据：
+
+```bash
+docker compose up -d
+cd server
+cp .env.example .env
+npm run prisma:migrate
+npm run prisma:seed
+```

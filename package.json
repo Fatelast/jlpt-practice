@@ -12,9 +12,16 @@
     "dev:miniapp": "npm --workspace apps/miniapp run dev:weapp",
     "dev:admin": "npm --workspace apps/admin-web run dev",
     "dev:server": "npm --workspace server run start:dev",
+    "test:server": "npm --workspace server run test",
+    "typecheck:server": "npm --workspace server run typecheck",
     "build:admin": "npm --workspace apps/admin-web run build",
     "build:miniapp": "npm --workspace apps/miniapp run build:weapp",
-    "build:server": "npm --workspace server run build"
+    "build:server": "npm --workspace server run build",
+    "prisma:generate": "npm --workspace server run prisma:generate",
+    "prisma:migrate": "npm --workspace server run prisma:migrate",
+    "prisma:seed": "npm --workspace server run prisma:seed",
+    "prisma:validate": "prisma validate --schema server/prisma/schema.prisma",
+    "prisma:format": "prisma format --schema server/prisma/schema.prisma"
   },
   "engines": {
     "node": ">=20.0.0"

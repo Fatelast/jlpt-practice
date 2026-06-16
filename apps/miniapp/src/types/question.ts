@@ -4,4 +4,5 @@ export type {
   QuestionCategory,
   QuestionOption,
   QuestionType,
+  SourceType,
 } from '@jlpt-practice/shared';
