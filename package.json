@@ -1,0 +1,22 @@
+{
+  "name": "jlpt-practice",
+  "version": "0.1.0",
+  "private": true,
+  "description": "日语考试刷题小程序 monorepo",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "server"
+  ],
+  "scripts": {
+    "dev:miniapp": "npm --workspace apps/miniapp run dev:weapp",
+    "dev:admin": "npm --workspace apps/admin-web run dev",
+    "dev:server": "npm --workspace server run start:dev",
+    "build:admin": "npm --workspace apps/admin-web run build",
+    "build:miniapp": "npm --workspace apps/miniapp run build:weapp",
+    "build:server": "npm --workspace server run build"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

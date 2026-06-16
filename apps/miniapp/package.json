@@ -1,0 +1,29 @@
+{
+  "name": "miniapp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "jlpt-practice 小程序端",
+  "scripts": {
+    "dev:weapp": "taro build --type weapp --watch",
+    "build:weapp": "taro build --type weapp",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@jlpt-practice/shared": "0.1.0",
+    "@tarojs/components": "^4.0.0",
+    "@tarojs/helper": "^4.0.0",
+    "@tarojs/plugin-framework-vue3": "^4.0.0",
+    "@tarojs/plugin-platform-weapp": "^4.0.0",
+    "@tarojs/runtime": "^4.0.0",
+    "@tarojs/shared": "^4.0.0",
+    "@tarojs/taro": "^4.0.0",
+    "pinia": "^2.1.0",
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@tarojs/cli": "^4.0.0",
+    "@vue/tsconfig": "^0.5.0",
+    "typescript": "^5.5.0",
+    "vue-tsc": "^2.0.0"
+  }
+}
