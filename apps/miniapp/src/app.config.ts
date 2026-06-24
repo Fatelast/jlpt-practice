@@ -1,17 +1,17 @@
-export default defineAppConfig({
+﻿export default defineAppConfig({
   pages: [
-    'pages/home/index',
+    'pages/login/index',
     'pages/practice/index',
     'pages/question/index',
     'pages/result/index',
+    'pages/home/index',
     'pages/wrong-book/index',
     'pages/favorites/index',
     'pages/profile/index',
-    'pages/login/index',
   ],
   window: {
     backgroundTextStyle: 'light',
-    navigationBarBackgroundColor: '#ffffff',
+    navigationBarBackgroundColor: '#f8faf8',
     navigationBarTitleText: 'JLPT Practice',
     navigationBarTextStyle: 'black',
   },

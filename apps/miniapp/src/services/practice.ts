@@ -1,4 +1,4 @@
-import { request } from './request';
+﻿import { request } from './request';
 import type { SubmitAnswerPayload, SubmitAnswerResult } from '@/types/practice';
 
 export interface CreatePracticeRecordPayload {
@@ -6,6 +6,17 @@ export interface CreatePracticeRecordPayload {
   category: string;
   mode: string;
   questionIds: string[];
+}
+
+export interface FinishPracticeRecordResult {
+  id: string;
+  totalCount: number;
+  correctCount: number;
+  wrongCount: number;
+  accuracy: number;
+  durationSeconds: number;
+  status: string;
+  finishedAt?: string;
 }
 
 export function createPracticeRecord(data: CreatePracticeRecordPayload) {
@@ -21,5 +32,12 @@ export function submitAnswer(recordId: string, data: SubmitAnswerPayload) {
     url: `/practice-records/${recordId}/answers`,
     method: 'POST',
     data,
+  });
+}
+
+export function finishPracticeRecord(recordId: string) {
+  return request<FinishPracticeRecordResult>({
+    url: `/practice-records/${recordId}/finish`,
+    method: 'POST',
   });
 }

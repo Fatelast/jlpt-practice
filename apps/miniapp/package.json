@@ -22,6 +22,8 @@
   },
   "devDependencies": {
     "@tarojs/cli": "^4.0.0",
+    "@tarojs/vite-runner": "^4.2.0",
+    "@vitejs/plugin-vue-jsx": "^3.1.0",
     "@vue/tsconfig": "^0.5.0",
     "typescript": "^5.5.0",
     "vue-tsc": "^2.0.0"

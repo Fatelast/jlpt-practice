@@ -1,3 +1,4 @@
+﻿import path from 'node:path';
 import { defineConfig } from '@tarojs/cli';
 
 export default defineConfig({
@@ -11,6 +12,18 @@ export default defineConfig({
   },
   sourceRoot: 'src',
   outputRoot: 'dist',
+  alias: {
+    '@': path.resolve(__dirname, '..', 'src'),
+    '@jlpt-practice/shared': path.resolve(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      'packages',
+      'shared',
+      'src',
+    ),
+  },
   plugins: ['@tarojs/plugin-framework-vue3'],
   framework: 'vue3',
   compiler: 'vite',
