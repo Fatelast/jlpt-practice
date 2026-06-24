@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Taro from '@tarojs/taro';
 import { t } from '@/utils/i18n';
 
@@ -35,12 +35,12 @@ async function switchTab(url: string, key: BottomTabKey) {
 <template>
   <view class="bottom-tab-shell safe-bottom-spacer">
     <view class="bottom-tab-bar">
-      <button
+      <view
         v-for="item in tabs"
         :key="item.key"
         class="bottom-tab-item"
         :class="[`tab-${item.key}`, { active: active === item.key }]"
-        hover-class="tap-feedback"
+        hover-class="bottom-tab-press"
         :aria-label="item.label"
         @tap="switchTab(item.url, item.key)"
       >
@@ -63,7 +63,7 @@ async function switchTab(url: string, key: BottomTabKey) {
           </view>
         </view>
         <text class="tab-label">{{ item.label }}</text>
-      </button>
+      </view>
     </view>
   </view>
 </template>
@@ -75,45 +75,50 @@ async function switchTab(url: string, key: BottomTabKey) {
   right: 0;
   bottom: 0;
   z-index: 30;
-  --safe-bottom-extra: 22rpx;
-  padding: 18rpx 32rpx 22rpx;
+  --safe-bottom-extra: 24rpx;
+  padding: 14rpx 28rpx 24rpx;
   box-sizing: border-box;
-  background: rgba(248, 250, 248, 0.92);
-  backdrop-filter: blur(14px);
-  border-top: 1rpx solid rgba(215, 223, 219, 0.72);
+  background: rgba(248, 250, 248, 0.94);
+  backdrop-filter: blur(18px);
+  border-top: 1rpx solid rgba(215, 223, 219, 0.5);
 }
 
 .bottom-tab-bar {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: center;
-  justify-content: space-between;
-  gap: 8rpx;
+  gap: 10rpx;
 }
 
 .bottom-tab-item {
-  flex: 1 1 0;
   min-width: 0;
-  height: 88rpx;
+  height: 82rpx;
   border-radius: 999rpx;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4rpx;
+  gap: 3rpx;
   color: var(--jp-text-muted);
   background: transparent;
-  transition: opacity 180ms ease, transform 180ms ease, background-color 180ms ease, color 180ms ease;
+  transition: opacity 160ms ease, transform 160ms ease, background-color 160ms ease, color 160ms ease;
 }
 
 .bottom-tab-item.active {
   color: var(--jp-primary);
-  background: rgba(175, 239, 223, 0.72);
+  background: rgba(175, 239, 223, 0.78);
+  box-shadow: 0 8rpx 18rpx rgba(40, 105, 92, 0.08);
+}
+
+.bottom-tab-press {
+  opacity: 0.78;
+  transform: scale(0.96);
 }
 
 .tab-icon {
   width: 34rpx;
-  height: 34rpx;
+  height: 32rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -126,35 +131,35 @@ async function switchTab(url: string, key: BottomTabKey) {
 }
 
 .icon-book {
-  width: 30rpx;
-  height: 24rpx;
+  width: 28rpx;
+  height: 22rpx;
   display: flex;
   gap: 2rpx;
 }
 
 .book-page {
   flex: 1;
-  border: 3rpx solid currentColor;
+  border: 2rpx solid currentColor;
   border-radius: 6rpx 3rpx 3rpx 6rpx;
   border-right-width: 1rpx;
 }
 
 .book-page.right {
   border-radius: 3rpx 6rpx 6rpx 3rpx;
-  border-right-width: 3rpx;
+  border-right-width: 2rpx;
   border-left-width: 1rpx;
 }
 
 .icon-review {
   position: relative;
-  width: 30rpx;
-  height: 30rpx;
+  width: 28rpx;
+  height: 28rpx;
 }
 
 .review-ring {
-  width: 24rpx;
-  height: 24rpx;
-  border: 3rpx solid currentColor;
+  width: 22rpx;
+  height: 22rpx;
+  border: 2rpx solid currentColor;
   border-radius: 999rpx;
   border-left-color: transparent;
 }
@@ -162,17 +167,17 @@ async function switchTab(url: string, key: BottomTabKey) {
 .review-hand {
   position: absolute;
   left: 3rpx;
-  top: 1rpx;
-  width: 10rpx;
-  height: 10rpx;
-  border-left: 3rpx solid currentColor;
-  border-bottom: 3rpx solid currentColor;
+  top: 2rpx;
+  width: 9rpx;
+  height: 9rpx;
+  border-left: 2rpx solid currentColor;
+  border-bottom: 2rpx solid currentColor;
   transform: rotate(35deg);
 }
 
 .icon-progress {
-  width: 30rpx;
-  height: 28rpx;
+  width: 28rpx;
+  height: 26rpx;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -186,21 +191,21 @@ async function switchTab(url: string, key: BottomTabKey) {
 }
 
 .progress-bar.short {
-  height: 12rpx;
+  height: 10rpx;
 }
 
 .progress-bar.medium {
-  height: 20rpx;
+  height: 18rpx;
 }
 
 .progress-bar.tall {
-  height: 28rpx;
+  height: 26rpx;
 }
 
 .icon-settings {
-  width: 28rpx;
-  height: 28rpx;
-  border: 3rpx solid currentColor;
+  width: 26rpx;
+  height: 26rpx;
+  border: 2rpx solid currentColor;
   border-radius: 999rpx;
   display: flex;
   align-items: center;

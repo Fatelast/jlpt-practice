@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Taro from '@tarojs/taro';
 import { ref } from 'vue';
 import { useUserStore } from '@/stores/user';
@@ -6,6 +6,14 @@ import { t } from '@/utils/i18n';
 
 const userStore = useUserStore();
 const loadingType = ref<'wechat' | 'guest' | ''>('');
+
+function getLoginErrorTitle(error: unknown) {
+  if (error instanceof Error && error.message.includes('request:fail')) {
+    return t('无法连接后端服务');
+  }
+
+  return t('登录失败');
+}
 
 async function enterPractice() {
   await Taro.redirectTo({ url: '/pages/practice/index' });
@@ -22,7 +30,7 @@ async function handleWechatLogin() {
     await userStore.loginWithWechat();
     await enterPractice();
   } catch (error) {
-    Taro.showToast({ title: t('登录失败'), icon: 'none' });
+    Taro.showToast({ title: getLoginErrorTitle(error), icon: 'none' });
     console.error(error);
   } finally {
     loadingType.value = '';
@@ -40,7 +48,7 @@ async function handleGuestLogin() {
     await userStore.loginAsGuest();
     await enterPractice();
   } catch (error) {
-    Taro.showToast({ title: t('登录失败'), icon: 'none' });
+    Taro.showToast({ title: getLoginErrorTitle(error), icon: 'none' });
     console.error(error);
   } finally {
     loadingType.value = '';

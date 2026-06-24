@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Taro from '@tarojs/taro';
 import { computed, onMounted, ref } from 'vue';
 import type { OptionKey, QuestionCategory } from '@jlpt-practice/shared';
@@ -179,14 +179,7 @@ async function closeSession() {
   <view class="question-page page" v-if="currentQuestion" :style="pageStyle">
     <view class="question-header" :style="headerStyle">
       <view class="header-left">
-        <button
-          class="close-button"
-          hover-class="tap-feedback"
-          :aria-label="t('结束练习')"
-          @tap="closeSession"
-        >
-          ×
-        </button>
+        <view class="close-button" hover-class="tap-feedback" :aria-label="t('结束练习')" @tap="closeSession"><text class="close-glyph">×</text></view>
         <text class="brand-word">{{ t('JLPT 刷题') }}</text>
       </view>
       <view class="progress-block">
@@ -299,11 +292,20 @@ async function closeSession() {
   width: 88rpx;
   height: 88rpx;
   border-radius: 999rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--jp-text-secondary);
-  background: var(--jp-surface-soft);
-  font-size: 42rpx;
-  line-height: 82rpx;
-  transition: opacity 180ms ease, transform 180ms ease;
+  background: rgba(242, 244, 242, 0.92);
+  box-shadow: 0 8rpx 22rpx rgba(40, 105, 92, 0.06);
+  transition: opacity 180ms ease, transform 180ms ease, background-color 180ms ease;
+}
+
+.close-glyph {
+  color: currentColor;
+  font-size: 34rpx;
+  line-height: 34rpx;
+  transform: translateY(-1rpx);
 }
 
 .brand-word {

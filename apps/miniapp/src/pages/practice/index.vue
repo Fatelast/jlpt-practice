@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Taro from '@tarojs/taro';
 import { computed, onMounted, ref } from 'vue';
 import type {
@@ -157,9 +157,7 @@ async function startPractice() {
   <view class="setup-page page" :style="pageStyle">
     <view class="setup-header" :style="headerStyle">
       <view class="header-left">
-        <button class="icon-button" hover-class="tap-feedback" :aria-label="t('返回')" @tap="goBack">
-          ‹
-        </button>
+        <view class="icon-button" hover-class="tap-feedback" :aria-label="t('返回')" @tap="goBack"><text class="back-glyph">‹</text></view>
         <view class="title-stack">
           <text class="title-kicker">{{ t('今日练习') }}</text>
           <text class="setup-title">{{ t('练习配置') }}</text>
@@ -339,12 +337,24 @@ async function startPractice() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--jp-surface-soft);
+  background: rgba(242, 244, 242, 0.92);
   color: var(--jp-primary);
   font-size: 34rpx;
   font-weight: 800;
   flex-shrink: 0;
-  transition: opacity 180ms ease, transform 180ms ease;
+  transition: opacity 180ms ease, transform 180ms ease, background-color 180ms ease;
+}
+
+.icon-button {
+  box-shadow: 0 8rpx 22rpx rgba(40, 105, 92, 0.06);
+}
+
+.back-glyph {
+  display: block;
+  color: currentColor;
+  font-size: 34rpx;
+  line-height: 34rpx;
+  transform: translateY(-1rpx);
 }
 
 .setup-content {

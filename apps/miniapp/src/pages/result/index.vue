@@ -87,14 +87,7 @@ async function tryAgain() {
 <template>
   <view class="result-page page" :style="pageStyle">
     <view class="result-header" :style="headerStyle">
-      <button
-        class="menu-button"
-        hover-class="tap-feedback"
-        :aria-label="t('返回练习配置')"
-        @tap="tryAgain"
-      >
-        ‹
-      </button>
+      <view class="menu-button" hover-class="tap-feedback" :aria-label="t('返回练习配置')" @tap="tryAgain"><text class="back-glyph">‹</text></view>
       <text class="result-brand">{{ t('JLPT 刷题') }}</text>
       <view class="avatar-dot">{{ t('练') }}</view>
     </view>
@@ -191,11 +184,18 @@ async function tryAgain() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--jp-surface-soft);
+  background: rgba(242, 244, 242, 0.92);
   color: var(--jp-primary);
-  font-size: 36rpx;
-  font-weight: 800;
-  transition: opacity 180ms ease, transform 180ms ease;
+  box-shadow: 0 8rpx 22rpx rgba(40, 105, 92, 0.06);
+  transition: opacity 180ms ease, transform 180ms ease, background-color 180ms ease;
+}
+
+.back-glyph {
+  display: block;
+  color: currentColor;
+  font-size: 34rpx;
+  line-height: 34rpx;
+  transform: translateY(-1rpx);
 }
 
 .avatar-dot {
