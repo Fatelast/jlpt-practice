@@ -1,3 +1,4 @@
-export default definePageConfig({
-  navigationBarTitleText: 'Practice',
+﻿export default definePageConfig({
+  navigationStyle: 'custom',
+  navigationBarTitleText: '练习配置',
 });

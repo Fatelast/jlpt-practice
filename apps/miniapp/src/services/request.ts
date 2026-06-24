@@ -19,11 +19,11 @@ export async function request<T>(
   const response = result.data;
 
   if (result.statusCode < 200 || result.statusCode >= 300) {
-    throw new Error(response?.message ?? `Request failed: ${result.statusCode}`);
+    throw new Error(response?.message ?? `请求失败：${result.statusCode}`);
   }
 
   if (!response || response.code !== 0) {
-    throw new Error(response?.message ?? 'Request failed');
+    throw new Error(response?.message ?? '请求失败');
   }
 
   return response;

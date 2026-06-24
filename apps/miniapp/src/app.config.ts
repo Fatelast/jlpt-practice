@@ -12,7 +12,7 @@
   window: {
     backgroundTextStyle: 'light',
     navigationBarBackgroundColor: '#f8faf8',
-    navigationBarTitleText: 'JLPT Practice',
+    navigationBarTitleText: 'JLPT 刷题',
     navigationBarTextStyle: 'black',
   },
 });

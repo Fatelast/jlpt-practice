@@ -51,7 +51,7 @@ export const useUserStore = defineStore('user', {
       this.currentLevel = userInfo.currentLevel;
       return true;
     },
-    async loginWithCode(code: string, nickname = 'JLPT Learner') {
+    async loginWithCode(code: string, nickname = '日语学习者') {
       const response = await wechatLogin({ code, nickname });
       this.setSession(response.data.token, response.data.user);
       return response.data.user;
@@ -61,7 +61,7 @@ export const useUserStore = defineStore('user', {
         const result = await Taro.login();
 
         if (result.code) {
-          return this.loginWithCode(result.code, 'JLPT Learner');
+          return this.loginWithCode(result.code, '日语学习者');
         }
       } catch (error) {
         console.warn('Taro login fallback to guest mode.', error);
@@ -77,7 +77,7 @@ export const useUserStore = defineStore('user', {
         setStorage(STORAGE_KEYS.guestCode, code);
       }
 
-      return this.loginWithCode(code, 'Guest Learner');
+      return this.loginWithCode(code, '体验用户');
     },
     logout() {
       this.token = '';
@@ -88,3 +88,4 @@ export const useUserStore = defineStore('user', {
     },
   },
 });
+

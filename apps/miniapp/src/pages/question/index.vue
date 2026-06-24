@@ -5,12 +5,21 @@ import type { OptionKey } from '@jlpt-practice/shared';
 import { finishPracticeRecord, submitAnswer } from '@/services/practice';
 import { usePracticeStore } from '@/stores/practice';
 import type { SubmitAnswerResult } from '@/types/practice';
+import { t } from '@/utils/i18n';
+import { getNavigationMetrics } from '@/utils/navigation';
 
 const practiceStore = usePracticeStore();
 const selectedAnswer = ref<OptionKey | ''>('');
 const answerResult = ref<SubmitAnswerResult | null>(null);
 const submitting = ref(false);
 const questionStartedAt = ref(Date.now());
+const navigationMetrics = getNavigationMetrics();
+const pageStyle = { paddingTop: `${navigationMetrics.contentTop}px` };
+const headerStyle = {
+  height: `${navigationMetrics.headerHeight}px`,
+  paddingTop: `${navigationMetrics.statusBarHeight}px`,
+  paddingRight: `${navigationMetrics.rightReserved}px`,
+};
 
 const currentQuestion = computed(
   () => practiceStore.questions[practiceStore.currentIndex] ?? null,
@@ -29,6 +38,13 @@ const isLastQuestion = computed(
   () => practiceStore.currentIndex >= practiceStore.questions.length - 1,
 );
 
+const categoryText: Record<string, string> = {
+  moji_goi: t('文字词汇'),
+  grammar: t('语法'),
+  reading: t('阅读'),
+  listening: t('听力'),
+};
+
 onMounted(() => {
   if (!practiceStore.practiceRecordId || practiceStore.questions.length === 0) {
     Taro.redirectTo({ url: '/pages/practice/index' });
@@ -44,6 +60,10 @@ function resetQuestionState() {
 
 function getDurationSeconds() {
   return Math.max(1, Math.round((Date.now() - questionStartedAt.value) / 1000));
+}
+
+function getCategoryText(category: string) {
+  return categoryText[category] ?? category;
 }
 
 function getOptionClass(optionKey: OptionKey) {
@@ -96,7 +116,7 @@ async function handleSelect(optionKey: OptionKey) {
     practiceStore.addAnswer(response.data);
   } catch (error) {
     selectedAnswer.value = '';
-    Taro.showToast({ title: 'Submit failed', icon: 'none' });
+    Taro.showToast({ title: t('提交失败'), icon: 'none' });
     console.error(error);
   } finally {
     submitting.value = false;
@@ -115,14 +135,14 @@ async function handleNext() {
   }
 
   submitting.value = true;
-  Taro.showLoading({ title: 'Saving' });
+  Taro.showLoading({ title: t('保存中') });
 
   try {
     const response = await finishPracticeRecord(practiceStore.practiceRecordId);
     practiceStore.finish(response.data);
     await Taro.redirectTo({ url: '/pages/result/index' });
   } catch (error) {
-    Taro.showToast({ title: 'Finish failed', icon: 'none' });
+    Taro.showToast({ title: t('完成练习失败'), icon: 'none' });
     console.error(error);
   } finally {
     Taro.hideLoading();
@@ -137,16 +157,23 @@ async function closeSession() {
 </script>
 
 <template>
-  <view class="question-page page" v-if="currentQuestion">
-    <view class="question-header">
+  <view class="question-page page" v-if="currentQuestion" :style="pageStyle">
+    <view class="question-header" :style="headerStyle">
       <view class="header-left">
-        <button class="close-button" @tap="closeSession">×</button>
-        <text class="brand-word">ZenJLPT</text>
+        <button
+          class="close-button"
+          hover-class="tap-feedback"
+          :aria-label="t('结束练习')"
+          @tap="closeSession"
+        >
+          ×
+        </button>
+        <text class="brand-word">{{ t('JLPT 刷题') }}</text>
       </view>
       <view class="progress-block">
         <view class="progress-copy">
-          <text>Lesson Progress</text>
-          <text>{{ progressText }}</text>
+          <text>{{ t('练习进度') }}</text>
+          <text class="progress-number">{{ progressText }}</text>
         </view>
         <view class="progress-track">
           <view class="progress-value" :style="{ width: `${progressPercent}%` }" />
@@ -157,7 +184,7 @@ async function closeSession() {
     <view class="question-main">
       <view class="question-card">
         <view class="question-badge">
-          {{ currentQuestion.category }} · {{ currentQuestion.level }}
+          {{ getCategoryText(currentQuestion.category) }} · {{ currentQuestion.level }}
         </view>
         <text v-if="currentQuestion.passage" class="passage-text">
           {{ currentQuestion.passage }}
@@ -175,6 +202,7 @@ async function closeSession() {
           class="option-card"
           :class="getOptionClass(option.key)"
           :disabled="Boolean(answerResult) || submitting"
+          hover-class="tap-feedback"
           @tap="handleSelect(option.key)"
         >
           <view class="option-badge">{{ getOptionBadge(option.key) }}</view>
@@ -184,23 +212,30 @@ async function closeSession() {
 
       <view v-if="answerResult" class="analysis-card">
         <view class="analysis-title">
-          {{ answerResult.isCorrect ? 'Correct' : 'Review' }}
+          <text class="analysis-icon">i</text>
+          <text>{{ answerResult.isCorrect ? t('回答正确') : t('查看解析') }}</text>
         </view>
         <text class="analysis-text">{{ answerResult.explanation }}</text>
       </view>
     </view>
 
-    <view class="question-footer">
-      <button class="ghost-action" @tap="Taro.showToast({ title: 'Coming soon', icon: 'none' })">
-        Bookmark
+    <view class="question-footer safe-bottom-spacer">
+      <button
+        class="ghost-action"
+        disabled
+        hover-class="tap-feedback"
+      >
+        <text class="favorite-mark">☆</text>
+        <text>{{ t('收藏') }}</text>
       </button>
       <button
         class="next-button"
         :class="{ disabled: !answerResult }"
         :disabled="!answerResult || submitting"
+        hover-class="tap-feedback"
         @tap="handleNext"
       >
-        {{ isLastQuestion ? 'Finish' : 'Next Question' }}
+        {{ isLastQuestion ? t('完成练习') : t('下一题') }}
       </button>
     </view>
   </view>
@@ -209,7 +244,7 @@ async function closeSession() {
 <style lang="scss">
 .question-page {
   min-height: 100vh;
-  padding: 120px 32px 160px;
+  padding: 136px 32px 168px;
   background: #f8faf8;
   box-sizing: border-box;
 }
@@ -219,9 +254,8 @@ async function closeSession() {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 10;
-  min-height: 104px;
-  padding: 18px 32px;
+  z-index: 20;
+  padding: 0 32px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -244,17 +278,20 @@ async function closeSession() {
   color: #3f4946;
   background: #f2f4f2;
   font-size: 44px;
-  line-height: 60px;
+  line-height: 58px;
+  transition: opacity 180ms ease, transform 180ms ease;
 }
 
 .brand-word {
   color: #28695c;
   font-size: 32px;
+  line-height: 42px;
   font-weight: 700;
 }
 
 .progress-block {
   flex: 1;
+  min-width: 0;
 }
 
 .progress-copy {
@@ -262,8 +299,14 @@ async function closeSession() {
   justify-content: space-between;
   color: #6f7976;
   font-size: 20px;
+  line-height: 28px;
   font-weight: 700;
   margin-bottom: 8px;
+  letter-spacing: 0;
+}
+
+.progress-number {
+  color: #28695c;
 }
 
 .progress-track {
@@ -277,7 +320,7 @@ async function closeSession() {
   height: 100%;
   border-radius: 999px;
   background: #28695c;
-  transition: width 0.3s ease;
+  transition: width 280ms ease-out;
 }
 
 .question-main {
@@ -291,21 +334,21 @@ async function closeSession() {
   padding: 40px;
   border-radius: 32px;
   background: #ffffff;
-  border: 2px solid #bfc9c5;
+  border: 1px solid #d7dfdb;
   box-shadow: 0 10px 30px rgba(152, 216, 200, 0.15);
 }
 
 .question-badge {
-  display: inline-flex;
   align-self: flex-start;
+  display: inline-flex;
   padding: 8px 20px;
   border-radius: 999px;
   margin-bottom: 32px;
   color: #7a5745;
   background: #fed0b9;
   font-size: 22px;
+  line-height: 30px;
   font-weight: 700;
-  text-transform: uppercase;
 }
 
 .passage-text {
@@ -330,25 +373,30 @@ async function closeSession() {
   font-size: 28px;
   line-height: 44px;
   margin-top: 24px;
-  font-style: italic;
 }
 
 .option-grid {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: 100%;
+  align-items: stretch;
 }
 
 .option-card {
+  width: 100%;
   min-height: 104px;
   padding: 24px;
   border-radius: 28px;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 24px;
   text-align: left;
   background: #f2f4f2;
-  border: 2px solid #bfc9c5;
+  border: 1px solid #d7dfdb;
+  transition: opacity 180ms ease, transform 180ms ease, background-color 180ms ease, border-color 180ms ease;
 }
 
 .option-card.selected {
@@ -407,11 +455,27 @@ async function closeSession() {
 }
 
 .analysis-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   color: #5d562c;
-  font-size: 36px;
-  line-height: 48px;
+  font-size: 34px;
+  line-height: 46px;
   font-weight: 700;
   margin-bottom: 16px;
+}
+
+.analysis-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: #665f34;
+  font-size: 24px;
+  line-height: 40px;
 }
 
 .analysis-text {
@@ -425,7 +489,7 @@ async function closeSession() {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 10;
+  z-index: 20;
   padding: 24px 32px 32px;
   box-sizing: border-box;
   display: flex;
@@ -440,9 +504,26 @@ async function closeSession() {
   border-radius: 999px;
   color: #28695c;
   background: transparent;
-  border: 2px solid #bfc9c5;
-  font-size: 26px;
+  border: 1px solid #bfc9c5;
+  font-size: 28px;
   font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.ghost-action[disabled] {
+  color: #7d8783;
+  background: #f2f4f2;
+  opacity: 1;
+}
+
+.favorite-mark {
+  font-size: 32px;
+  line-height: 32px;
 }
 
 .next-button {
@@ -453,10 +534,15 @@ async function closeSession() {
   background: #28695c;
   font-size: 32px;
   font-weight: 700;
+  line-height: 88px;
   box-shadow: 0 10px 30px rgba(40, 105, 92, 0.2);
+  transition: opacity 180ms ease, transform 180ms ease;
 }
 
 .next-button.disabled {
-  opacity: 0.45;
+  color: rgba(255, 255, 255, 0.86);
+  background: #9bbdb5;
+  box-shadow: none;
+  opacity: 1;
 }
 </style>

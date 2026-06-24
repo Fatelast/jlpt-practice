@@ -2,6 +2,7 @@
 import Taro from '@tarojs/taro';
 import { ref } from 'vue';
 import { useUserStore } from '@/stores/user';
+import { t } from '@/utils/i18n';
 
 const userStore = useUserStore();
 const loadingType = ref<'wechat' | 'guest' | ''>('');
@@ -21,7 +22,7 @@ async function handleWechatLogin() {
     await userStore.loginWithWechat();
     await enterPractice();
   } catch (error) {
-    Taro.showToast({ title: 'Login failed', icon: 'none' });
+    Taro.showToast({ title: t('登录失败'), icon: 'none' });
     console.error(error);
   } finally {
     loadingType.value = '';
@@ -39,7 +40,7 @@ async function handleGuestLogin() {
     await userStore.loginAsGuest();
     await enterPractice();
   } catch (error) {
-    Taro.showToast({ title: 'Login failed', icon: 'none' });
+    Taro.showToast({ title: t('登录失败'), icon: 'none' });
     console.error(error);
   } finally {
     loadingType.value = '';
@@ -49,32 +50,38 @@ async function handleGuestLogin() {
 
 <template>
   <view class="login-page page">
-    <view class="brand-block">
-      <view class="logo-mark">
-        <text class="logo-symbol">JP</text>
+    <view class="login-canvas">
+      <view class="brand-block">
+        <view class="logo-mark">
+          <text class="logo-symbol">訳</text>
+        </view>
+        <text class="brand-title">{{ t('JLPT 刷题') }}</text>
       </view>
-      <text class="brand-title">JLPT Prep</text>
-    </view>
 
-    <text class="intro-copy">
-      Sign in to keep practice history, mistakes, and favorites in sync.
-    </text>
+      <text class="intro-copy">
+        {{ t('登录后可保存刷题记录、错题和收藏。') }}
+      </text>
 
-    <view class="action-stack">
-      <button
-        class="primary-button"
-        :loading="loadingType === 'wechat'"
-        @tap="handleWechatLogin"
-      >
-        WeChat Login
-      </button>
-      <button
-        class="secondary-button"
-        :loading="loadingType === 'guest'"
-        @tap="handleGuestLogin"
-      >
-        Try as Guest
-      </button>
+      <view class="action-stack">
+        <button
+          class="primary-button"
+          :disabled="Boolean(loadingType)"
+          :loading="loadingType === 'wechat'"
+          hover-class="tap-feedback"
+          @tap="handleWechatLogin"
+        >
+          {{ t('微信授权登录') }}
+        </button>
+        <button
+          class="secondary-button"
+          :disabled="Boolean(loadingType)"
+          :loading="loadingType === 'guest'"
+          hover-class="tap-feedback"
+          @tap="handleGuestLogin"
+        >
+          {{ t('暂不登录，先体验') }}
+        </button>
+      </view>
     </view>
   </view>
 </template>
@@ -82,14 +89,21 @@ async function handleGuestLogin() {
 <style lang="scss">
 .login-page {
   min-height: 100vh;
-  padding: 96px 32px 48px;
+  padding: calc(env(safe-area-inset-top) + 80px) 32px 56px;
   box-sizing: border-box;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   background: #f8faf8;
   text-align: center;
+}
+
+.login-canvas {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .brand-block {
@@ -100,23 +114,23 @@ async function handleGuestLogin() {
 }
 
 .logo-mark {
-  width: 144px;
-  height: 144px;
+  width: 152px;
+  height: 152px;
   border-radius: 999px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #f2f4f2;
-  border: 1px solid #e1e3e1;
+  border: 2px solid #e1e3e1;
   box-shadow: 0 10px 30px rgba(152, 216, 200, 0.15);
 }
 
 .logo-symbol {
   color: #28695c;
-  font-size: 42px;
+  font-size: 64px;
+  line-height: 72px;
   font-weight: 700;
-  letter-spacing: 2px;
 }
 
 .brand-title {
@@ -129,8 +143,8 @@ async function handleGuestLogin() {
 .intro-copy {
   max-width: 560px;
   color: #3f4946;
-  font-size: 32px;
-  line-height: 48px;
+  font-size: 30px;
+  line-height: 46px;
   margin-bottom: 64px;
 }
 
@@ -147,8 +161,9 @@ async function handleGuestLogin() {
   height: 112px;
   border-radius: 999px;
   font-size: 32px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 112px;
+  transition: opacity 180ms ease, transform 180ms ease;
 }
 
 .primary-button {
@@ -161,5 +176,10 @@ async function handleGuestLogin() {
   color: #28695c;
   background: transparent;
   border: 2px solid #28695c;
+}
+
+.primary-button[disabled],
+.secondary-button[disabled] {
+  opacity: 0.68;
 }
 </style>

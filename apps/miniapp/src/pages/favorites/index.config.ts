@@ -1,3 +1,3 @@
-export default definePageConfig({
-  navigationBarTitleText: 'Favorites',
+﻿export default definePageConfig({
+  navigationBarTitleText: '收藏题',
 });

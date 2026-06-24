@@ -1,3 +1,4 @@
-export default definePageConfig({
-  navigationBarTitleText: 'Question',
+﻿export default definePageConfig({
+  navigationStyle: 'custom',
+  navigationBarTitleText: '做题',
 });

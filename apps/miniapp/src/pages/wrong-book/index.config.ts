@@ -1,3 +1,3 @@
-export default definePageConfig({
-  navigationBarTitleText: 'Wrong Book',
+﻿export default definePageConfig({
+  navigationBarTitleText: '错题本',
 });
