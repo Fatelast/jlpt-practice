@@ -51,36 +51,34 @@ async function handleGuestLogin() {
 <template>
   <view class="login-page page">
     <view class="login-canvas">
-      <view class="brand-block">
+      <view class="brand-panel">
         <view class="logo-mark">
           <text class="logo-symbol">訳</text>
         </view>
+        <text class="brand-kicker">{{ t('轻量日语练习') }}</text>
         <text class="brand-title">{{ t('JLPT 刷题') }}</text>
+        <text class="intro-copy">
+          {{ t('把每次练习、错题和收藏都沉淀下来，按自己的节奏稳定推进。') }}
+        </text>
       </view>
 
-      <text class="intro-copy">
-        {{ t('登录后可保存刷题记录、错题和收藏。') }}
-      </text>
-
       <view class="action-stack">
-        <button
+        <view
           class="primary-button"
-          :disabled="Boolean(loadingType)"
-          :loading="loadingType === 'wechat'"
+          :class="{ disabled: Boolean(loadingType) }"
           hover-class="tap-feedback"
           @tap="handleWechatLogin"
         >
-          {{ t('微信授权登录') }}
-        </button>
-        <button
+          {{ loadingType === 'wechat' ? t('登录中') : t('微信授权登录') }}
+        </view>
+        <view
           class="secondary-button"
-          :disabled="Boolean(loadingType)"
-          :loading="loadingType === 'guest'"
+          :class="{ disabled: Boolean(loadingType) }"
           hover-class="tap-feedback"
           @tap="handleGuestLogin"
         >
-          {{ t('暂不登录，先体验') }}
-        </button>
+          {{ loadingType === 'guest' ? t('进入中') : t('暂不登录，先体验') }}
+        </view>
       </view>
     </view>
   </view>
@@ -89,97 +87,111 @@ async function handleGuestLogin() {
 <style lang="scss">
 .login-page {
   min-height: 100vh;
-  padding: calc(env(safe-area-inset-top) + 80px) 32px 56px;
+  padding: calc(env(safe-area-inset-top) + 92rpx) 40rpx calc(env(safe-area-inset-bottom) + 56rpx);
   box-sizing: border-box;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  background: #f8faf8;
+  background:
+    linear-gradient(180deg, rgba(175, 239, 223, 0.2) 0%, rgba(248, 250, 248, 0) 34%),
+    var(--jp-bg);
   text-align: center;
 }
 
 .login-canvas {
   width: 100%;
-  max-width: 640px;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   align-items: center;
 }
 
-.brand-block {
+.brand-panel {
+  width: 100%;
+  padding-top: 104rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 48px;
 }
 
 .logo-mark {
-  width: 152px;
-  height: 152px;
-  border-radius: 999px;
-  margin-bottom: 20px;
+  width: 168rpx;
+  height: 168rpx;
+  border-radius: 999rpx;
+  margin-bottom: 28rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f2f4f2;
-  border: 2px solid #e1e3e1;
-  box-shadow: 0 10px 30px rgba(152, 216, 200, 0.15);
+  background: rgba(255, 255, 255, 0.84);
+  border: 1rpx solid var(--jp-border);
+  box-shadow: var(--jp-shadow-soft);
 }
 
 .logo-symbol {
-  color: #28695c;
-  font-size: 64px;
-  line-height: 72px;
+  color: var(--jp-primary);
+  font-size: 72rpx;
+  line-height: 80rpx;
   font-weight: 700;
+}
+
+.brand-kicker {
+  color: var(--jp-text-muted);
+  font-size: 24rpx;
+  line-height: 34rpx;
+  font-weight: 700;
+  margin-bottom: 10rpx;
 }
 
 .brand-title {
-  color: #28695c;
-  font-size: 48px;
-  line-height: 64px;
-  font-weight: 700;
+  color: var(--jp-primary);
+  font-size: 52rpx;
+  line-height: 66rpx;
+  font-weight: 800;
 }
 
 .intro-copy {
-  max-width: 560px;
-  color: #3f4946;
-  font-size: 30px;
-  line-height: 46px;
-  margin-bottom: 64px;
+  width: 560rpx;
+  max-width: 100%;
+  color: var(--jp-text-secondary);
+  font-size: 28rpx;
+  line-height: 44rpx;
+  margin-top: 28rpx;
 }
 
 .action-stack {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 22rpx;
 }
 
 .primary-button,
 .secondary-button {
   width: 100%;
-  height: 112px;
-  border-radius: 999px;
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 112px;
+  height: 108rpx;
+  border-radius: 999rpx;
+  box-sizing: border-box;
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 108rpx;
   transition: opacity 180ms ease, transform 180ms ease;
 }
 
 .primary-button {
   color: #ffffff;
-  background: #28695c;
-  box-shadow: 0 10px 30px rgba(40, 105, 92, 0.2);
+  background: var(--jp-primary);
+  box-shadow: var(--jp-shadow-primary);
 }
 
 .secondary-button {
-  color: #28695c;
-  background: transparent;
-  border: 2px solid #28695c;
+  color: var(--jp-primary);
+  background: rgba(255, 255, 255, 0.55);
+  border: 2rpx solid var(--jp-primary);
 }
 
-.primary-button[disabled],
-.secondary-button[disabled] {
+.primary-button.disabled,
+.secondary-button.disabled {
   opacity: 0.68;
 }
 </style>

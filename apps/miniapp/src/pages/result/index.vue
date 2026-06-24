@@ -1,18 +1,28 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Taro from '@tarojs/taro';
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import BottomTabBar from '@/components/BottomTabBar/index.vue';
 import { usePracticeStore } from '@/stores/practice';
 import { t } from '@/utils/i18n';
-import { getNavigationMetrics } from '@/utils/navigation';
+import {
+  getDefaultNavigationMetrics,
+  getNavigationMetrics,
+} from '@/utils/navigation';
 
 const practiceStore = usePracticeStore();
-const navigationMetrics = getNavigationMetrics();
-const pageStyle = { paddingTop: `${navigationMetrics.contentTop}px` };
-const headerStyle = {
-  height: `${navigationMetrics.headerHeight}px`,
-  paddingTop: `${navigationMetrics.statusBarHeight}px`,
-  paddingRight: `${navigationMetrics.rightReserved}px`,
-};
+const navigationMetrics = ref(getDefaultNavigationMetrics());
+const pageStyle = computed(() => ({
+  paddingTop: `${navigationMetrics.value.contentTop}px`,
+}));
+const headerStyle = computed(() => ({
+  height: `${navigationMetrics.value.headerHeight}px`,
+  paddingTop: `${navigationMetrics.value.statusBarHeight}px`,
+  paddingRight: `${navigationMetrics.value.rightReserved}px`,
+}));
+
+onMounted(() => {
+  navigationMetrics.value = getNavigationMetrics();
+});
 
 const totalCount = computed(
   () => practiceStore.finishedResult?.totalCount ?? practiceStore.answers.length,
@@ -36,7 +46,7 @@ const accuracy = computed(() => {
 const scoreBackground = computed(() => {
   const degrees = Math.round((accuracy.value / 100) * 360);
 
-  return `conic-gradient(#28695c 0deg, #98d8c8 ${degrees}deg, #eceeec ${degrees}deg)`;
+  return `conic-gradient(var(--jp-primary) 0deg, var(--jp-primary-soft) ${degrees}deg, var(--jp-surface-soft) ${degrees}deg)`;
 });
 const durationText = computed(() => {
   const durationSeconds = practiceStore.finishedResult?.durationSeconds ?? 0;
@@ -44,10 +54,10 @@ const durationText = computed(() => {
   const seconds = durationSeconds % 60;
 
   if (minutes <= 0) {
-    return `${seconds}秒`;
+    return `${seconds}${t('秒')}`;
   }
 
-  return `${minutes}分${seconds}秒`;
+  return `${minutes}${t('分')}${seconds}${t('秒')}`;
 });
 
 const resultMessage = computed(() => {
@@ -137,7 +147,7 @@ async function tryAgain() {
       </view>
     </view>
 
-    <view class="result-actions safe-bottom-spacer">
+    <view class="result-actions">
       <button class="review-button disabled" disabled hover-class="tap-feedback">
         <text>{{ t('复盘错题') }}</text>
         <text class="action-soon">{{ t('未开放') }}</text>
@@ -146,15 +156,17 @@ async function tryAgain() {
         {{ t('再练一组') }}
       </button>
     </view>
+
+    <BottomTabBar active="review" />
   </view>
 </template>
 
 <style lang="scss">
 .result-page {
   min-height: 100vh;
-  padding: 128px 32px 64px;
+  padding: 128rpx 32rpx calc(214rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
-  background: #f8faf8;
+  background: var(--jp-bg);
 }
 
 .result-header {
@@ -163,7 +175,7 @@ async function tryAgain() {
   left: 0;
   right: 0;
   z-index: 20;
-  padding: 0 32px;
+  padding: 0 32rpx;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -172,110 +184,122 @@ async function tryAgain() {
   backdrop-filter: blur(12px);
 }
 
-.menu-button,
-.avatar-dot {
-  width: 64px;
-  height: 64px;
-  border-radius: 999px;
+.menu-button {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 999rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f2f4f2;
-  color: #28695c;
-  font-size: 36px;
-  font-weight: 700;
+  background: var(--jp-surface-soft);
+  color: var(--jp-primary);
+  font-size: 36rpx;
+  font-weight: 800;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.avatar-dot {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 999rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--jp-surface-soft);
+  color: var(--jp-primary);
+  font-size: 36rpx;
+  font-weight: 800;
   transition: opacity 180ms ease, transform 180ms ease;
 }
 
 .result-brand {
-  color: #28695c;
-  font-size: 36px;
-  line-height: 48px;
-  font-weight: 700;
+  color: var(--jp-primary);
+  font-size: 34rpx;
+  line-height: 46rpx;
+  font-weight: 800;
 }
 
 .score-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 48px;
+  margin-bottom: 42rpx;
 }
 
 .score-ring {
-  width: 320px;
-  height: 320px;
-  border-radius: 999px;
-  margin-bottom: 40px;
-  padding: 24px;
+  width: 306rpx;
+  height: 306rpx;
+  border-radius: 999rpx;
+  margin-bottom: 34rpx;
+  padding: 22rpx;
   box-sizing: border-box;
-  box-shadow: 0 10px 30px rgba(152, 216, 200, 0.25);
+  box-shadow: 0 10rpx 30rpx rgba(152, 216, 200, 0.25);
 }
 
 .score-inner {
   width: 100%;
   height: 100%;
-  border-radius: 999px;
+  border-radius: 999rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #f8faf8;
+  background: var(--jp-bg);
 }
 
 .score-value {
-  color: #28695c;
-  font-size: 64px;
-  line-height: 80px;
-  font-weight: 700;
+  color: var(--jp-primary);
+  font-size: 64rpx;
+  line-height: 78rpx;
+  font-weight: 800;
 }
 
 .score-label {
-  color: #3f4946;
-  font-size: 24px;
-  line-height: 32px;
-  font-weight: 700;
-  letter-spacing: 0;
+  color: var(--jp-text-secondary);
+  font-size: 24rpx;
+  line-height: 32rpx;
+  font-weight: 800;
 }
 
 .result-copy {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14rpx;
   text-align: center;
 }
 
 .result-title {
-  color: #191c1b;
-  font-size: 40px;
-  line-height: 54px;
-  font-weight: 700;
+  color: var(--jp-text);
+  font-size: 38rpx;
+  line-height: 52rpx;
+  font-weight: 800;
 }
 
 .result-subtitle {
-  color: #3f4946;
-  font-size: 28px;
-  line-height: 44px;
+  color: var(--jp-text-secondary);
+  font-size: 28rpx;
+  line-height: 44rpx;
 }
 
 .stats-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
-  margin-bottom: 48px;
+  gap: 20rpx;
+  margin-bottom: 42rpx;
 }
 
 .stat-card {
-  width: calc((100% - 20px) / 2);
-  min-height: 172px;
-  padding: 28px;
-  border-radius: 32px;
+  width: calc((100% - 20rpx) / 2);
+  min-height: 168rpx;
+  padding: 26rpx;
+  border-radius: 32rpx;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: #ffffff;
-  border: 1px solid #d7dfdb;
+  background: var(--jp-surface);
+  border: 1rpx solid var(--jp-border);
 }
 
 .stat-card.peach {
@@ -287,99 +311,98 @@ async function tryAgain() {
 }
 
 .stat-mark {
-  color: #28695c;
-  font-size: 34px;
-  line-height: 40px;
-  font-weight: 700;
-  margin-bottom: 8px;
+  color: var(--jp-primary);
+  font-size: 34rpx;
+  line-height: 40rpx;
+  font-weight: 800;
+  margin-bottom: 8rpx;
 }
 
 .stat-label {
-  color: #3f4946;
-  font-size: 24px;
-  line-height: 32px;
-  font-weight: 700;
-  margin-bottom: 8px;
+  color: var(--jp-text-secondary);
+  font-size: 24rpx;
+  line-height: 32rpx;
+  font-weight: 800;
+  margin-bottom: 8rpx;
 }
 
 .stat-value {
-  color: #191c1b;
-  font-size: 44px;
-  line-height: 60px;
-  font-weight: 700;
+  color: var(--jp-text);
+  font-size: 44rpx;
+  line-height: 58rpx;
+  font-weight: 800;
 }
 
 .stat-value.compact {
-  font-size: 34px;
-  line-height: 48px;
+  font-size: 34rpx;
+  line-height: 48rpx;
 }
 
 .reflection-card {
-  padding: 32px;
-  border-radius: 32px;
+  padding: 30rpx;
+  border-radius: 32rpx;
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 22rpx;
   background: rgba(254, 208, 185, 0.35);
-  border: 1px solid rgba(121, 87, 69, 0.12);
-  margin-bottom: 48px;
+  border: 1rpx solid rgba(121, 87, 69, 0.12);
+  margin-bottom: 38rpx;
 }
 
 .sprout-mark {
-  width: 88px;
-  height: 88px;
-  border-radius: 999px;
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: 999rpx;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #28695c;
+  color: var(--jp-primary);
   background: rgba(255, 255, 255, 0.65);
-  font-size: 44px;
+  font-size: 42rpx;
   font-weight: 300;
 }
 
 .reflection-copy {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 8rpx;
 }
 
 .reflection-label {
   color: #7a5745;
-  font-size: 22px;
-  line-height: 30px;
-  font-weight: 700;
-  letter-spacing: 0;
+  font-size: 22rpx;
+  line-height: 30rpx;
+  font-weight: 800;
 }
 
 .reflection-text {
   color: #5f402f;
-  font-size: 28px;
-  line-height: 42px;
+  font-size: 28rpx;
+  line-height: 42rpx;
 }
 
 .result-actions {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20rpx;
 }
 
 .review-button,
 .again-button {
   width: 100%;
-  height: 96px;
-  border-radius: 999px;
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 96px;
+  height: 96rpx;
+  border-radius: 999rpx;
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 96rpx;
   transition: opacity 180ms ease, transform 180ms ease;
 }
 
 .review-button {
-  color: #28695c;
-  background: transparent;
-  border: 1px solid #28695c;
+  color: var(--jp-primary);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1rpx solid var(--jp-primary);
 }
 
 .review-button.disabled {
@@ -388,24 +411,23 @@ async function tryAgain() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 4rpx;
   line-height: 1;
-  background: #f2f4f2;
-  border-color: #d7dfdb;
+  background: var(--jp-surface-soft);
+  border-color: var(--jp-border);
   opacity: 1;
 }
 
 .action-soon {
   color: #8f9894;
-  font-size: 20px;
-  line-height: 26px;
-  font-weight: 600;
+  font-size: 20rpx;
+  line-height: 26rpx;
+  font-weight: 700;
 }
 
 .again-button {
   color: #ffffff;
-  background: #28695c;
-  box-shadow: 0 10px 30px rgba(40, 105, 92, 0.2);
+  background: var(--jp-primary);
+  box-shadow: var(--jp-shadow-primary);
 }
 </style>
-

@@ -1,25 +1,35 @@
 ﻿<script setup lang="ts">
 import Taro from '@tarojs/taro';
 import { computed, onMounted, ref } from 'vue';
-import type { OptionKey } from '@jlpt-practice/shared';
+import type { OptionKey, QuestionCategory } from '@jlpt-practice/shared';
 import { finishPracticeRecord, submitAnswer } from '@/services/practice';
 import { usePracticeStore } from '@/stores/practice';
 import type { SubmitAnswerResult } from '@/types/practice';
+import { getQuestionCategoryText } from '@/utils/enumText';
 import { t } from '@/utils/i18n';
-import { getNavigationMetrics } from '@/utils/navigation';
+import {
+  getDefaultNavigationMetrics,
+  getNavigationMetrics,
+} from '@/utils/navigation';
 
 const practiceStore = usePracticeStore();
 const selectedAnswer = ref<OptionKey | ''>('');
 const answerResult = ref<SubmitAnswerResult | null>(null);
 const submitting = ref(false);
 const questionStartedAt = ref(Date.now());
-const navigationMetrics = getNavigationMetrics();
-const pageStyle = { paddingTop: `${navigationMetrics.contentTop}px` };
-const headerStyle = {
-  height: `${navigationMetrics.headerHeight}px`,
-  paddingTop: `${navigationMetrics.statusBarHeight}px`,
-  paddingRight: `${navigationMetrics.rightReserved}px`,
-};
+const navigationMetrics = ref(getDefaultNavigationMetrics());
+const pageStyle = computed(() => ({
+  paddingTop: `${navigationMetrics.value.contentTop}px`,
+}));
+const headerStyle = computed(() => ({
+  height: `${navigationMetrics.value.headerHeight}px`,
+  paddingTop: `${navigationMetrics.value.statusBarHeight}px`,
+  paddingRight: `${navigationMetrics.value.rightReserved}px`,
+}));
+
+onMounted(() => {
+  navigationMetrics.value = getNavigationMetrics();
+});
 
 const currentQuestion = computed(
   () => practiceStore.questions[practiceStore.currentIndex] ?? null,
@@ -38,13 +48,6 @@ const isLastQuestion = computed(
   () => practiceStore.currentIndex >= practiceStore.questions.length - 1,
 );
 
-const categoryText: Record<string, string> = {
-  moji_goi: t('文字词汇'),
-  grammar: t('语法'),
-  reading: t('阅读'),
-  listening: t('听力'),
-};
-
 onMounted(() => {
   if (!practiceStore.practiceRecordId || practiceStore.questions.length === 0) {
     Taro.redirectTo({ url: '/pages/practice/index' });
@@ -62,8 +65,8 @@ function getDurationSeconds() {
   return Math.max(1, Math.round((Date.now() - questionStartedAt.value) / 1000));
 }
 
-function getCategoryText(category: string) {
-  return categoryText[category] ?? category;
+function getCategoryText(category: QuestionCategory) {
+  return getQuestionCategoryText(category);
 }
 
 function getOptionClass(optionKey: OptionKey) {
@@ -96,6 +99,22 @@ function getOptionBadge(optionKey: OptionKey) {
   }
 
   return optionKey;
+}
+
+function getOptionStateText(optionKey: OptionKey) {
+  if (!answerResult.value) {
+    return '';
+  }
+
+  if (optionKey === answerResult.value.correctAnswer) {
+    return t('正确答案');
+  }
+
+  if (optionKey === answerResult.value.selectedAnswer) {
+    return t('你的选择');
+  }
+
+  return '';
 }
 
 async function handleSelect(optionKey: OptionKey) {
@@ -206,7 +225,12 @@ async function closeSession() {
           @tap="handleSelect(option.key)"
         >
           <view class="option-badge">{{ getOptionBadge(option.key) }}</view>
-          <text class="option-text">{{ option.text }}</text>
+          <view class="option-copy">
+            <text class="option-text">{{ option.text }}</text>
+            <text v-if="getOptionStateText(option.key)" class="option-state">
+              {{ getOptionStateText(option.key) }}
+            </text>
+          </view>
         </button>
       </view>
 
@@ -244,8 +268,8 @@ async function closeSession() {
 <style lang="scss">
 .question-page {
   min-height: 100vh;
-  padding: 136px 32px 168px;
-  background: #f8faf8;
+  padding: 136rpx 32rpx calc(176rpx + env(safe-area-inset-bottom));
+  background: var(--jp-bg);
   box-sizing: border-box;
 }
 
@@ -255,11 +279,11 @@ async function closeSession() {
   left: 0;
   right: 0;
   z-index: 20;
-  padding: 0 32px;
+  padding: 0 32rpx;
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 22rpx;
   background: rgba(248, 250, 248, 0.92);
   backdrop-filter: blur(12px);
 }
@@ -267,26 +291,26 @@ async function closeSession() {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14rpx;
   flex-shrink: 0;
 }
 
 .close-button {
-  width: 64px;
-  height: 64px;
-  border-radius: 999px;
-  color: #3f4946;
-  background: #f2f4f2;
-  font-size: 44px;
-  line-height: 58px;
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 999rpx;
+  color: var(--jp-text-secondary);
+  background: var(--jp-surface-soft);
+  font-size: 42rpx;
+  line-height: 82rpx;
   transition: opacity 180ms ease, transform 180ms ease;
 }
 
 .brand-word {
-  color: #28695c;
-  font-size: 32px;
-  line-height: 42px;
-  font-weight: 700;
+  color: var(--jp-primary);
+  font-size: 30rpx;
+  line-height: 40rpx;
+  font-weight: 800;
 }
 
 .progress-block {
@@ -297,191 +321,204 @@ async function closeSession() {
 .progress-copy {
   display: flex;
   justify-content: space-between;
-  color: #6f7976;
-  font-size: 20px;
-  line-height: 28px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  letter-spacing: 0;
+  color: var(--jp-text-muted);
+  font-size: 20rpx;
+  line-height: 28rpx;
+  font-weight: 800;
+  margin-bottom: 8rpx;
 }
 
 .progress-number {
-  color: #28695c;
+  color: var(--jp-primary);
 }
 
 .progress-track {
-  height: 12px;
-  border-radius: 999px;
+  height: 12rpx;
+  border-radius: 999rpx;
   overflow: hidden;
-  background: #afefdf;
+  background: var(--jp-primary-faint);
 }
 
 .progress-value {
   height: 100%;
-  border-radius: 999px;
-  background: #28695c;
+  border-radius: 999rpx;
+  background: var(--jp-primary);
   transition: width 280ms ease-out;
 }
 
 .question-main {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 34rpx;
 }
 
 .question-card,
 .analysis-card {
-  padding: 40px;
-  border-radius: 32px;
-  background: #ffffff;
-  border: 1px solid #d7dfdb;
-  box-shadow: 0 10px 30px rgba(152, 216, 200, 0.15);
+  padding: 38rpx;
+  border-radius: 34rpx;
+  background: var(--jp-surface);
+  border: 1rpx solid var(--jp-border);
+  box-shadow: var(--jp-shadow-soft);
 }
 
 .question-badge {
   align-self: flex-start;
   display: inline-flex;
-  padding: 8px 20px;
-  border-radius: 999px;
-  margin-bottom: 32px;
+  padding: 8rpx 20rpx;
+  border-radius: 999rpx;
+  margin-bottom: 30rpx;
   color: #7a5745;
-  background: #fed0b9;
-  font-size: 22px;
-  line-height: 30px;
-  font-weight: 700;
+  background: var(--jp-peach);
+  font-size: 22rpx;
+  line-height: 30rpx;
+  font-weight: 800;
 }
 
 .passage-text {
   display: block;
-  color: #3f4946;
-  font-size: 30px;
-  line-height: 48px;
-  margin-bottom: 32px;
+  color: var(--jp-text-secondary);
+  font-size: 30rpx;
+  line-height: 48rpx;
+  margin-bottom: 30rpx;
 }
 
 .stem-text {
   display: block;
-  color: #191c1b;
-  font-size: 40px;
-  line-height: 60px;
-  font-weight: 700;
+  color: var(--jp-text);
+  font-size: 40rpx;
+  line-height: 62rpx;
+  font-weight: 800;
 }
 
 .translation-text {
   display: block;
-  color: #3f4946;
-  font-size: 28px;
-  line-height: 44px;
-  margin-top: 24px;
+  color: var(--jp-text-secondary);
+  font-size: 28rpx;
+  line-height: 44rpx;
+  margin-top: 22rpx;
 }
 
 .option-grid {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18rpx;
   width: 100%;
-  align-items: stretch;
 }
 
 .option-card {
   width: 100%;
-  min-height: 104px;
-  padding: 24px;
-  border-radius: 28px;
+  min-height: 104rpx;
+  padding: 22rpx 24rpx;
+  border-radius: 28rpx;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 24px;
+  gap: 22rpx;
   text-align: left;
-  background: #f2f4f2;
-  border: 1px solid #d7dfdb;
+  background: var(--jp-surface-soft);
+  border: 1rpx solid var(--jp-border);
   transition: opacity 180ms ease, transform 180ms ease, background-color 180ms ease, border-color 180ms ease;
 }
 
 .option-card.selected {
-  background: #afefdf;
-  border-color: #28695c;
+  background: var(--jp-primary-faint);
+  border-color: var(--jp-primary);
 }
 
 .option-card.correct {
-  background: #98d8c8;
-  border-color: #28695c;
+  background: var(--jp-primary-soft);
+  border-color: var(--jp-primary);
 }
 
 .option-card.wrong {
-  background: #ffdad6;
-  border-color: #ba1a1a;
+  background: var(--jp-danger-soft);
+  border-color: var(--jp-danger);
 }
 
 .option-card.muted {
-  opacity: 0.55;
+  opacity: 0.58;
 }
 
 .option-badge {
-  width: 64px;
-  height: 64px;
-  border-radius: 999px;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 999rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: #3f4946;
+  color: var(--jp-text-secondary);
   background: #e1e3e1;
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 28rpx;
+  font-weight: 800;
 }
 
 .option-card.correct .option-badge {
   color: #ffffff;
-  background: #28695c;
+  background: var(--jp-primary);
 }
 
 .option-card.wrong .option-badge {
   color: #ffffff;
-  background: #ba1a1a;
+  background: var(--jp-danger);
+}
+
+.option-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
 }
 
 .option-text {
-  color: #191c1b;
-  font-size: 32px;
-  line-height: 46px;
+  color: var(--jp-text);
+  font-size: 32rpx;
+  line-height: 46rpx;
+}
+
+.option-state {
+  color: var(--jp-text-secondary);
+  font-size: 22rpx;
+  line-height: 30rpx;
+  font-weight: 700;
 }
 
 .analysis-card {
   background: rgba(214, 204, 152, 0.3);
-  border-color: #d6cc98;
+  border-color: var(--jp-sand);
   box-shadow: none;
 }
 
 .analysis-title {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 12rpx;
   color: #5d562c;
-  font-size: 34px;
-  line-height: 46px;
-  font-weight: 700;
-  margin-bottom: 16px;
+  font-size: 32rpx;
+  line-height: 44rpx;
+  font-weight: 800;
+  margin-bottom: 14rpx;
 }
 
 .analysis-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 999rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
   background: #665f34;
-  font-size: 24px;
-  line-height: 40px;
+  font-size: 24rpx;
+  line-height: 40rpx;
 }
 
 .analysis-text {
   color: #5d562c;
-  font-size: 30px;
-  line-height: 48px;
+  font-size: 28rpx;
+  line-height: 46rpx;
 }
 
 .question-footer {
@@ -490,57 +527,58 @@ async function closeSession() {
   right: 0;
   bottom: 0;
   z-index: 20;
-  padding: 24px 32px 32px;
+  padding: 22rpx 32rpx 30rpx;
   box-sizing: border-box;
   display: flex;
-  gap: 20px;
+  gap: 18rpx;
   background: rgba(248, 250, 248, 0.94);
   backdrop-filter: blur(12px);
+  border-top: 1rpx solid rgba(215, 223, 219, 0.72);
 }
 
 .ghost-action {
-  width: 180px;
-  height: 88px;
-  border-radius: 999px;
-  color: #28695c;
-  background: transparent;
-  border: 1px solid #bfc9c5;
-  font-size: 28px;
-  font-weight: 700;
+  width: 178rpx;
+  height: 90rpx;
+  border-radius: 999rpx;
+  color: var(--jp-primary);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1rpx solid #bfc9c5;
+  font-size: 26rpx;
+  font-weight: 800;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 8rpx;
   transition: opacity 180ms ease, transform 180ms ease;
 }
 
 .ghost-action[disabled] {
   color: #7d8783;
-  background: #f2f4f2;
+  background: var(--jp-surface-soft);
   opacity: 1;
 }
 
 .favorite-mark {
-  font-size: 32px;
-  line-height: 32px;
+  font-size: 30rpx;
+  line-height: 30rpx;
 }
 
 .next-button {
   flex: 1;
-  height: 88px;
-  border-radius: 999px;
+  height: 90rpx;
+  border-radius: 999rpx;
   color: #ffffff;
-  background: #28695c;
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 88px;
-  box-shadow: 0 10px 30px rgba(40, 105, 92, 0.2);
+  background: var(--jp-primary);
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 90rpx;
+  box-shadow: var(--jp-shadow-primary);
   transition: opacity 180ms ease, transform 180ms ease;
 }
 
 .next-button.disabled {
-  color: rgba(255, 255, 255, 0.86);
+  color: rgba(255, 255, 255, 0.88);
   background: #9bbdb5;
   box-shadow: none;
   opacity: 1;

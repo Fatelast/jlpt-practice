@@ -24,3 +24,5 @@ apps/miniapp/dist/
 apps/admin-web/dist/
 server/dist/
 apps/miniapp/.swc/
+.codegraph/
+

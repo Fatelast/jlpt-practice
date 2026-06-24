@@ -1,4 +1,4 @@
-﻿page {
+page {
   min-height: 100%;
   background: #f8faf8;
   color: #191c1b;
@@ -22,9 +22,26 @@ button::after {
 }
 
 .page {
+  --jp-bg: #f8faf8;
+  --jp-surface: #ffffff;
+  --jp-surface-soft: #f2f4f2;
+  --jp-text: #191c1b;
+  --jp-text-secondary: #3f4946;
+  --jp-text-muted: #6f7976;
+  --jp-primary: #28695c;
+  --jp-primary-soft: #98d8c8;
+  --jp-primary-faint: #afefdf;
+  --jp-peach: #fed0b9;
+  --jp-sand: #d6cc98;
+  --jp-border: #d7dfdb;
+  --jp-danger: #ba1a1a;
+  --jp-danger-soft: #ffdad6;
+  --jp-shadow-soft: 0 10rpx 30rpx rgba(152, 216, 200, 0.15);
+  --jp-shadow-primary: 0 12rpx 32rpx rgba(40, 105, 92, 0.2);
+
   min-height: 100vh;
   box-sizing: border-box;
-  background: #f8faf8;
+  background: var(--jp-bg);
 }
 
 .tap-feedback {
@@ -33,5 +50,11 @@ button::after {
 }
 
 .safe-bottom-spacer {
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: calc(var(--safe-bottom-extra, 24rpx) + env(safe-area-inset-bottom)) !important;
+}
+
+.mini-card {
+  border: 1rpx solid var(--jp-border);
+  background: var(--jp-surface);
+  box-shadow: var(--jp-shadow-soft);
 }

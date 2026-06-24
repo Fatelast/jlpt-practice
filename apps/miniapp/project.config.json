@@ -2,7 +2,7 @@
   "miniprogramRoot": "dist/",
   "projectname": "jlpt-practice",
   "description": "JLPT practice miniapp",
-  "appid": "touristappid",
+  "appid": "wx85c6436ed75d4aa0",
   "setting": {
     "urlCheck": false,
     "es6": true,

@@ -1,3 +1,3 @@
-export default definePageConfig({
-  navigationBarTitleText: 'Home',
+﻿export default definePageConfig({
+  navigationBarTitleText: '进度',
 });

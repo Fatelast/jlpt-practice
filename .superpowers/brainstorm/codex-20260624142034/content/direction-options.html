@@ -1,0 +1,95 @@
+﻿<style>
+.direction-grid { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:18px; margin-top:18px; }
+.phone { width:100%; max-width:260px; height:520px; margin:0 auto; border-radius:34px; background:#f8faf8; border:1px solid #d7dfdb; box-shadow:0 18px 50px rgba(40,105,92,.12); overflow:hidden; position:relative; }
+.phone::before { content:""; position:absolute; top:0; left:50%; transform:translateX(-50%); width:112px; height:28px; background:#111; border-radius:0 0 18px 18px; z-index:2; }
+.status { height:54px; display:flex; align-items:end; justify-content:space-between; padding:0 18px 8px; font-size:10px; color:#191c1b; }
+.topline { display:flex; align-items:center; justify-content:space-between; padding:12px 18px; }
+.title { font-weight:800; color:#28695c; font-size:18px; }
+.capsule { width:56px; height:26px; border:1px solid #d7dfdb; border-radius:999px; background:#fff; }
+.sheet { margin:14px 18px; padding:18px; border-radius:26px; background:#fff; border:1px solid #d7dfdb; }
+.pill { height:38px; border-radius:999px; background:#28695c; color:white; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; }
+.ghost { height:36px; border-radius:999px; border:1px solid #28695c; color:#28695c; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+.tile { min-height:72px; border-radius:18px; background:#fff; border:1px solid #d7dfdb; padding:10px; font-size:12px; font-weight:800; color:#191c1b; }
+.tile.active { background:#98d8c8; border-color:#28695c; }
+.tabbar { position:absolute; left:16px; right:16px; bottom:14px; height:54px; border-radius:999px; background:rgba(255,255,255,.92); border:1px solid #d7dfdb; box-shadow:0 -8px 30px rgba(152,216,200,.18); display:flex; align-items:center; justify-content:space-around; font-size:10px; color:#6f7976; }
+.tabbar span:first-child { color:#28695c; background:#afefdf; padding:7px 13px; border-radius:999px; font-weight:800; }
+.hero-logo { width:76px; height:76px; border-radius:26px; background:#afefdf; display:flex; align-items:center; justify-content:center; color:#28695c; font-size:32px; font-weight:900; margin:150px auto 18px; }
+.center { text-align:center; padding:0 24px; }
+.big { color:#28695c; font-size:22px; font-weight:900; }
+.copy { color:#3f4946; font-size:12px; line-height:1.6; margin:10px 0 24px; }
+.question-card { margin:20px 18px 12px; padding:20px; border-radius:24px; background:#fff; border:1px solid #d7dfdb; }
+.japanese { font-size:18px; line-height:1.55; font-weight:900; color:#191c1b; margin:12px 0; }
+.option-row { margin:10px 18px; height:48px; border-radius:18px; border:1px solid #d7dfdb; background:#fff; display:flex; align-items:center; gap:12px; padding:0 14px; font-weight:700; }
+.badge { width:28px; height:28px; border-radius:999px; background:#eceeec; display:flex; align-items:center; justify-content:center; color:#3f4946; }
+.option .content h3 { margin-bottom:8px; }
+@media (max-width: 900px) { .direction-grid { grid-template-columns: 1fr; } }
+</style>
+
+<h2>选择整体重构方向</h2>
+<p class="subtitle">范围：登录页、练习配置页、做题页、结果页。这里展示的是结构和气质，不是最终像素稿。点击你偏好的方向。</p>
+
+<div class="direction-grid cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="phone">
+        <div class="status"><span>14:20</span><span>●●</span></div>
+        <div class="hero-logo">訳</div>
+        <div class="center">
+          <div class="big">JLPT 刷题</div>
+          <div class="copy">更克制、更留白，像打开一本干净的练习册。</div>
+          <div class="pill">开始练习</div>
+          <div style="height:10px"></div>
+          <div class="ghost">先体验</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. 极简练习册</h3>
+      <p>大留白、少装饰、首屏安静。优点是高级和稳定；缺点是信息密度低，配置页可能需要更多滚动。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="phone">
+        <div class="status"><span>14:20</span><span>●●</span></div>
+        <div class="topline"><div class="title">今日练习</div><div class="capsule"></div></div>
+        <div class="sheet">
+          <div style="font-size:12px;color:#6f7976;font-weight:700">N5 · 混合练习</div>
+          <div style="font-size:22px;color:#191c1b;font-weight:900;margin:8px 0">10 题轻量训练</div>
+          <div class="pill">开始练习</div>
+        </div>
+        <div class="grid2" style="margin:14px 18px">
+          <div class="tile">文字词汇</div><div class="tile">语法</div><div class="tile">阅读</div><div class="tile active">混合</div>
+        </div>
+        <div class="tabbar"><span>学习</span><span>复盘</span><span>进度</span><span>我的</span></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. 轻仪表盘</h3>
+      <p>把练习配置做成“今日练习面板”，选项更紧凑，CTA 更清晰。推荐方向：兼顾质感、效率和小程序尺寸。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="phone">
+        <div class="status"><span>14:20</span><span>●●</span></div>
+        <div class="topline"><div class="title">第 1 题</div><div class="capsule"></div></div>
+        <div class="question-card">
+          <div style="display:inline-block;background:#fed0b9;color:#7a5745;border-radius:999px;padding:5px 12px;font-size:11px;font-weight:800">语法 · N5</div>
+          <div class="japanese">わたしは 毎朝 7時（ ）起きます。</div>
+          <div style="font-size:12px;color:#3f4946">我每天早上 7 点起床。</div>
+        </div>
+        <div class="option-row"><span class="badge">A</span><span>に</span></div>
+        <div class="option-row"><span class="badge">B</span><span>で</span></div>
+        <div class="option-row"><span class="badge">C</span><span>を</span></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. 题目优先</h3>
+      <p>做题页最强，卡片和选项更像考试工具。优点是答题体验好；缺点是登录/配置/结果页需要另外找统一语言。</p>
+    </div>
+  </div>
+</div>
