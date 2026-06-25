@@ -78,6 +78,10 @@ onMounted(() => {
   }
 });
 
+async function reviewWrongQuestions() {
+  await Taro.redirectTo({ url: '/pages/wrong-book/index' });
+}
+
 async function tryAgain() {
   practiceStore.reset();
   await Taro.redirectTo({ url: '/pages/practice/index' });
@@ -141,9 +145,8 @@ async function tryAgain() {
     </view>
 
     <view class="result-actions">
-      <button class="review-button disabled" disabled hover-class="tap-feedback">
-        <text>{{ t('复盘错题') }}</text>
-        <text class="action-soon">{{ t('未开放') }}</text>
+      <button class="review-button" hover-class="tap-feedback" @tap="reviewWrongQuestions">
+        {{ t('复盘错题') }}
       </button>
       <button class="again-button" hover-class="tap-feedback" @tap="tryAgain">
         {{ t('再练一组') }}

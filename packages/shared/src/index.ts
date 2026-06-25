@@ -72,6 +72,14 @@ export interface Question {
   isFavorite?: boolean;
 }
 
+export interface WrongQuestionItem {
+  question: Question;
+  wrongCount: number;
+  lastWrongAnswer: string | null;
+  lastWrongAt: string;
+  mastered: boolean;
+}
+
 export interface PracticeConfig {
   level: 'N5' | 'N4';
   category: PracticeCategory;
