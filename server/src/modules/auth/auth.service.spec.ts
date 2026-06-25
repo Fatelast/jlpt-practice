@@ -93,17 +93,53 @@ describe('AuthService', () => {
 
     await service.wechatLogin({ code: 'wx-code', nickname: '太郎' });
 
-    expect(fetchSpy).toHaveBeenCalledWith(
+    expect(fetchSpy.mock.calls[0][0]).toEqual(
       expect.stringContaining('https://api.weixin.qq.com/sns/jscode2session'),
     );
-    expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('appid=wx-test'));
-    expect(fetchSpy).toHaveBeenCalledWith(
+    expect(fetchSpy.mock.calls[0][0]).toEqual(expect.stringContaining('appid=wx-test'));
+    expect(fetchSpy.mock.calls[0][0]).toEqual(
       expect.stringContaining('secret=secret-test'),
     );
-    expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('js_code=wx-code'));
+    expect(fetchSpy.mock.calls[0][0]).toEqual(expect.stringContaining('js_code=wx-code'));
     expect(prisma.user.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { openid: 'wechat-openid' },
+      }),
+    );
+
+    fetchSpy.mockRestore();
+  });
+
+  it('uses development openid for guest login even when app credentials are configured', async () => {
+    const fetchSpy = jest.spyOn(global, 'fetch');
+    const prisma = {
+      user: {
+        upsert: jest.fn().mockResolvedValue({
+          id: 13n,
+          nickname: '体验用户',
+          avatarUrl: null,
+          currentLevel: 'N5',
+        }),
+      },
+    };
+    const tokenService = {
+      signUserToken: jest.fn().mockResolvedValue('guest-token'),
+    };
+    const service = new AuthService(
+      prisma as never,
+      tokenService as never,
+      createConfigService({
+        'wechat.appId': 'wx-test',
+        'wechat.appSecret': 'secret-test',
+      }) as never,
+    );
+
+    await service.wechatLogin({ code: 'guest-debug', nickname: '体验用户' });
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(prisma.user.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { openid: 'dev:guest-debug' },
       }),
     );
 

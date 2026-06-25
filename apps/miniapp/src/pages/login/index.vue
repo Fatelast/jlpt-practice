@@ -15,8 +15,8 @@ function getLoginErrorTitle(error: unknown) {
   return t('登录失败');
 }
 
-async function enterPractice() {
-  await Taro.redirectTo({ url: '/pages/practice/index' });
+async function enterHome() {
+  await Taro.redirectTo({ url: '/pages/home/index' });
 }
 
 async function handleWechatLogin() {
@@ -28,7 +28,7 @@ async function handleWechatLogin() {
 
   try {
     await userStore.loginWithWechat();
-    await enterPractice();
+    await enterHome();
   } catch (error) {
     Taro.showToast({ title: getLoginErrorTitle(error), icon: 'none' });
     console.error(error);
@@ -46,7 +46,7 @@ async function handleGuestLogin() {
 
   try {
     await userStore.loginAsGuest();
-    await enterPractice();
+    await enterHome();
   } catch (error) {
     Taro.showToast({ title: getLoginErrorTitle(error), icon: 'none' });
     console.error(error);

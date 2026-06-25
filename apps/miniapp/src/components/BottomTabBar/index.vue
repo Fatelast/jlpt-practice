@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import Taro from '@tarojs/taro';
+import AppIcon from '@/components/AppIcon/index.vue';
+import type { AppIconName } from '@/components/AppIcon/index.vue';
 import { t } from '@/utils/i18n';
 
 export type BottomTabKey = 'study' | 'review' | 'progress' | 'settings';
@@ -12,11 +14,12 @@ const tabs: Array<{
   key: BottomTabKey;
   label: string;
   url: string;
+  icon: AppIconName;
 }> = [
-  { key: 'study', label: t('学习'), url: '/pages/practice/index' },
-  { key: 'review', label: t('复盘'), url: '/pages/wrong-book/index' },
-  { key: 'progress', label: t('进度'), url: '/pages/home/index' },
-  { key: 'settings', label: t('我的'), url: '/pages/profile/index' },
+  { key: 'study', label: t('学习'), url: '/pages/home/index', icon: 'book' },
+  { key: 'review', label: t('复盘'), url: '/pages/wrong-book/index', icon: 'review' },
+  { key: 'progress', label: t('进度'), url: '/pages/progress/index', icon: 'chart' },
+  { key: 'settings', label: t('我的'), url: '/pages/profile/index', icon: 'user' },
 ];
 
 async function switchTab(url: string, key: BottomTabKey) {
@@ -44,23 +47,8 @@ async function switchTab(url: string, key: BottomTabKey) {
         :aria-label="item.label"
         @tap="switchTab(item.url, item.key)"
       >
-        <view class="tab-icon" aria-hidden="true">
-          <view v-if="item.key === 'study'" class="icon-book">
-            <view class="book-page left" />
-            <view class="book-page right" />
-          </view>
-          <view v-else-if="item.key === 'review'" class="icon-review">
-            <view class="review-ring" />
-            <view class="review-hand" />
-          </view>
-          <view v-else-if="item.key === 'progress'" class="icon-progress">
-            <view class="progress-bar short" />
-            <view class="progress-bar medium" />
-            <view class="progress-bar tall" />
-          </view>
-          <view v-else class="icon-settings">
-            <view class="settings-dot" />
-          </view>
+        <view class="tab-icon-shell" aria-hidden="true">
+          <AppIcon :name="item.icon" />
         </view>
         <text class="tab-label">{{ item.label }}</text>
       </view>
@@ -75,31 +63,40 @@ async function switchTab(url: string, key: BottomTabKey) {
   right: 0;
   bottom: 0;
   z-index: 30;
-  --safe-bottom-extra: 24rpx;
-  padding: 14rpx 28rpx 24rpx;
+  --safe-bottom-extra: 20rpx;
+  padding: 18rpx 24rpx 18rpx;
   box-sizing: border-box;
-  background: rgba(248, 250, 248, 0.94);
-  backdrop-filter: blur(18px);
-  border-top: 1rpx solid rgba(215, 223, 219, 0.5);
+  background: linear-gradient(180deg, rgba(248, 250, 248, 0), rgba(248, 250, 248, 0.94) 36%, rgba(248, 250, 248, 0.98));
 }
 
 .bottom-tab-bar {
+  min-height: 116rpx;
+  padding: 12rpx;
+  box-sizing: border-box;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  align-items: center;
-  gap: 10rpx;
+  align-items: stretch;
+  gap: 8rpx;
+  border-radius: 38rpx;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1rpx solid rgba(215, 223, 219, 0.82);
+  box-shadow:
+    0 -6rpx 24rpx rgba(25, 28, 27, 0.04),
+    0 18rpx 42rpx rgba(40, 105, 92, 0.12);
+  backdrop-filter: blur(24px);
 }
 
 .bottom-tab-item {
+  position: relative;
   min-width: 0;
-  height: 82rpx;
-  border-radius: 999rpx;
+  height: 92rpx;
+  border-radius: 30rpx;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3rpx;
+  gap: 4rpx;
   color: var(--jp-text-muted);
   background: transparent;
   transition: opacity 160ms ease, transform 160ms ease, background-color 160ms ease, color 160ms ease;
@@ -107,115 +104,43 @@ async function switchTab(url: string, key: BottomTabKey) {
 
 .bottom-tab-item.active {
   color: var(--jp-primary);
-  background: rgba(175, 239, 223, 0.78);
-  box-shadow: 0 8rpx 18rpx rgba(40, 105, 92, 0.08);
+  background: linear-gradient(180deg, rgba(175, 239, 223, 0.48), rgba(175, 239, 223, 0.26));
 }
 
 .bottom-tab-press {
   opacity: 0.78;
-  transform: scale(0.96);
+  transform: translateY(2rpx) scale(0.97);
 }
 
-.tab-icon {
-  width: 34rpx;
-  height: 32rpx;
+.tab-icon-shell {
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: 19rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: currentColor;
+  background: rgba(242, 244, 242, 0.86);
+  transform: scale(0.76);
+  transition: transform 160ms ease, background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.bottom-tab-item.active .tab-icon-shell {
+  color: #ffffff;
+  background: var(--jp-primary);
+  box-shadow: 0 10rpx 22rpx rgba(40, 105, 92, 0.22);
+  transform: translateY(-2rpx) scale(0.82);
 }
 
 .tab-label {
+  color: currentColor;
   font-size: 20rpx;
   line-height: 24rpx;
-  font-weight: 700;
+  font-weight: 800;
 }
 
-.icon-book {
-  width: 28rpx;
-  height: 22rpx;
-  display: flex;
-  gap: 2rpx;
+.bottom-tab-item:not(.active) .tab-label {
+  color: rgba(63, 73, 70, 0.82);
 }
 
-.book-page {
-  flex: 1;
-  border: 2rpx solid currentColor;
-  border-radius: 6rpx 3rpx 3rpx 6rpx;
-  border-right-width: 1rpx;
-}
-
-.book-page.right {
-  border-radius: 3rpx 6rpx 6rpx 3rpx;
-  border-right-width: 2rpx;
-  border-left-width: 1rpx;
-}
-
-.icon-review {
-  position: relative;
-  width: 28rpx;
-  height: 28rpx;
-}
-
-.review-ring {
-  width: 22rpx;
-  height: 22rpx;
-  border: 2rpx solid currentColor;
-  border-radius: 999rpx;
-  border-left-color: transparent;
-}
-
-.review-hand {
-  position: absolute;
-  left: 3rpx;
-  top: 2rpx;
-  width: 9rpx;
-  height: 9rpx;
-  border-left: 2rpx solid currentColor;
-  border-bottom: 2rpx solid currentColor;
-  transform: rotate(35deg);
-}
-
-.icon-progress {
-  width: 28rpx;
-  height: 26rpx;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 4rpx;
-}
-
-.progress-bar {
-  width: 6rpx;
-  border-radius: 999rpx;
-  background: currentColor;
-}
-
-.progress-bar.short {
-  height: 10rpx;
-}
-
-.progress-bar.medium {
-  height: 18rpx;
-}
-
-.progress-bar.tall {
-  height: 26rpx;
-}
-
-.icon-settings {
-  width: 26rpx;
-  height: 26rpx;
-  border: 2rpx solid currentColor;
-  border-radius: 999rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.settings-dot {
-  width: 8rpx;
-  height: 8rpx;
-  border-radius: 999rpx;
-  background: currentColor;
-}
 </style>
