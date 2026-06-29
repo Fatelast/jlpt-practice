@@ -1,4 +1,4 @@
-﻿declare module '@jlpt-practice/shared' {
+declare module '@jlpt-practice/shared' {
   export type JLPTLevel = 'N5' | 'N4' | 'N3' | 'N2' | 'N1';
 
   export type QuestionCategory =
@@ -73,6 +73,44 @@
     isFavorite?: boolean;
   }
 
+
+  export const FEEDBACK_TYPES: readonly [
+    'stem_error',
+    'option_error',
+    'answer_error',
+    'explanation_error',
+    'translation_error',
+    'other',
+  ];
+
+  export type FeedbackType = typeof FEEDBACK_TYPES[number];
+
+  export type FeedbackStatus = 'pending' | 'processing' | 'resolved' | 'closed';
+
+  export interface FeedbackQuestionSnapshot {
+    id: string;
+    level: JLPTLevel;
+    category: QuestionCategory;
+    stem: string;
+  }
+
+  export interface CreateFeedbackPayload {
+    questionId: string;
+    type: FeedbackType;
+    content: string;
+  }
+
+  export interface FeedbackItem {
+    id: string;
+    questionId: string | null;
+    question: FeedbackQuestionSnapshot | null;
+    type: FeedbackType;
+    content: string;
+    status: FeedbackStatus;
+    handlerRemark: string | null;
+    createdAt: string;
+    handledAt: string | null;
+  }
   export interface PracticeConfig {
     level: 'N5' | 'N4';
     category: PracticeCategory;

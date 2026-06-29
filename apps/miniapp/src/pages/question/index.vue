@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import Taro from '@tarojs/taro';
 import { computed, onMounted, ref } from 'vue';
-import type { OptionKey, QuestionCategory } from '@jlpt-practice/shared';
+import type { FeedbackType, OptionKey, QuestionCategory } from '@jlpt-practice/shared';
+import { favoriteQuestion, unfavoriteQuestion } from '@/services/favorite';
+import { createFeedback } from '@/services/feedback';
 import { finishPracticeRecord, submitAnswer } from '@/services/practice';
 import { usePracticeStore } from '@/stores/practice';
 import type { SubmitAnswerResult } from '@/types/practice';
@@ -16,6 +18,11 @@ const practiceStore = usePracticeStore();
 const selectedAnswer = ref<OptionKey | ''>('');
 const answerResult = ref<SubmitAnswerResult | null>(null);
 const submitting = ref(false);
+const favoriteUpdating = ref(false);
+const feedbackVisible = ref(false);
+const feedbackSubmitting = ref(false);
+const feedbackType = ref<FeedbackType>('answer_error');
+const feedbackContent = ref('');
 const questionStartedAt = ref(Date.now());
 const navigationMetrics = ref(getDefaultNavigationMetrics());
 const pageStyle = computed(() => ({
@@ -26,6 +33,15 @@ const headerStyle = computed(() => ({
   paddingTop: `${navigationMetrics.value.statusBarHeight}px`,
   paddingRight: `${navigationMetrics.value.rightReserved}px`,
 }));
+
+const feedbackOptions = computed<Array<{ value: FeedbackType; label: string }>>(() => [
+  { value: 'stem_error', label: t('题干错误') },
+  { value: 'option_error', label: t('选项错误') },
+  { value: 'answer_error', label: t('答案错误') },
+  { value: 'explanation_error', label: t('解析错误') },
+  { value: 'translation_error', label: t('翻译错误') },
+  { value: 'other', label: t('其他问题') },
+]);
 
 onMounted(() => {
   navigationMetrics.value = getNavigationMetrics();
@@ -142,6 +158,80 @@ async function handleSelect(optionKey: OptionKey) {
   }
 }
 
+async function toggleFavorite() {
+  if (!currentQuestion.value || favoriteUpdating.value) {
+    return;
+  }
+
+  favoriteUpdating.value = true;
+  const question = currentQuestion.value;
+  const nextFavorite = !question.isFavorite;
+
+  try {
+    const response = nextFavorite
+      ? await favoriteQuestion(question.id)
+      : await unfavoriteQuestion(question.id);
+    practiceStore.setQuestionFavorite(question.id, response.data.isFavorite);
+    Taro.showToast({
+      title: response.data.isFavorite ? t('已收藏') : t('已取消收藏'),
+      icon: 'none',
+    });
+  } catch (error) {
+    Taro.showToast({ title: t('操作失败'), icon: 'none' });
+    console.error(error);
+  } finally {
+    favoriteUpdating.value = false;
+  }
+}
+function openFeedback() {
+  if (!currentQuestion.value || feedbackSubmitting.value) {
+    return;
+  }
+
+  feedbackVisible.value = true;
+}
+
+function closeFeedback() {
+  if (feedbackSubmitting.value) {
+    return;
+  }
+
+  feedbackVisible.value = false;
+  feedbackType.value = 'answer_error';
+  feedbackContent.value = '';
+}
+
+async function submitFeedback() {
+  if (!currentQuestion.value || feedbackSubmitting.value) {
+    return;
+  }
+
+  const content = feedbackContent.value.trim();
+
+  if (!content) {
+    Taro.showToast({ title: t('请填写反馈内容'), icon: 'none' });
+    return;
+  }
+
+  feedbackSubmitting.value = true;
+
+  try {
+    await createFeedback({
+      questionId: currentQuestion.value.id,
+      type: feedbackType.value,
+      content,
+    });
+    Taro.showToast({ title: t('已提交反馈'), icon: 'none' });
+    feedbackVisible.value = false;
+    feedbackType.value = 'answer_error';
+    feedbackContent.value = '';
+  } catch (error) {
+    Taro.showToast({ title: t('提交反馈失败'), icon: 'none' });
+    console.error(error);
+  } finally {
+    feedbackSubmitting.value = false;
+  }
+}
 async function handleNext() {
   if (!answerResult.value || submitting.value) {
     return;
@@ -234,16 +324,72 @@ async function closeSession() {
         </view>
         <text class="analysis-text">{{ answerResult.explanation }}</text>
       </view>
+    <view v-if="feedbackVisible" class="feedback-mask" @tap="closeFeedback">
+      <view class="feedback-sheet" @tap.stop>
+        <view class="feedback-sheet-head">
+          <view>
+            <text class="feedback-title">{{ t('提交题目反馈') }}</text>
+            <text class="feedback-subtitle">{{ t('选择问题类型，并补充具体说明。') }}</text>
+          </view>
+          <button class="feedback-close" hover-class="tap-feedback" @tap="closeFeedback">×</button>
+        </view>
+
+        <view class="feedback-type-grid">
+          <button
+            v-for="item in feedbackOptions"
+            :key="item.value"
+            class="feedback-type-chip"
+            :class="{ active: feedbackType === item.value }"
+            hover-class="tap-feedback"
+            @tap="feedbackType = item.value"
+          >
+            {{ item.label }}
+          </button>
+        </view>
+
+        <textarea
+          v-model="feedbackContent"
+          class="feedback-textarea"
+          :placeholder="t('请描述具体问题，便于后续处理。')"
+          maxlength="500"
+        />
+
+        <view class="feedback-actions">
+          <button class="feedback-cancel" hover-class="tap-feedback" @tap="closeFeedback">
+            {{ t('取消') }}
+          </button>
+          <button
+            class="feedback-submit"
+            :disabled="feedbackSubmitting"
+            hover-class="tap-feedback"
+            @tap="submitFeedback"
+          >
+            {{ feedbackSubmitting ? t('提交中') : t('提交反馈') }}
+          </button>
+        </view>
+      </view>
+    </view>
     </view>
 
     <view class="question-footer safe-bottom-spacer">
       <button
         class="ghost-action"
-        disabled
+        :class="{ favorite: currentQuestion.isFavorite }"
+        :disabled="favoriteUpdating"
         hover-class="tap-feedback"
+        @tap="toggleFavorite"
       >
-        <text class="favorite-mark">☆</text>
-        <text>{{ t('收藏') }}</text>
+        <text class="favorite-mark">{{ currentQuestion.isFavorite ? '★' : '☆' }}</text>
+        <text>{{ currentQuestion.isFavorite ? t('已收藏') : t('收藏') }}</text>
+      </button>
+      <button
+        class="ghost-action feedback-action"
+        :disabled="feedbackSubmitting"
+        hover-class="tap-feedback"
+        @tap="openFeedback"
+      >
+        <text class="feedback-mark">!</text>
+        <text>{{ t('反馈') }}</text>
       </button>
       <button
         class="next-button"
@@ -532,14 +678,14 @@ async function closeSession() {
   padding: 22rpx 32rpx 30rpx;
   box-sizing: border-box;
   display: flex;
-  gap: 18rpx;
+  gap: 14rpx;
   background: rgba(248, 250, 248, 0.94);
   backdrop-filter: blur(12px);
   border-top: 1rpx solid rgba(215, 223, 219, 0.72);
 }
 
 .ghost-action {
-  width: 178rpx;
+  width: 144rpx;
   height: 90rpx;
   border-radius: 999rpx;
   color: var(--jp-primary);
@@ -559,6 +705,12 @@ async function closeSession() {
   color: #7d8783;
   background: var(--jp-surface-soft);
   opacity: 1;
+}
+
+.ghost-action.favorite {
+  color: #7a5745;
+  background: rgba(254, 208, 185, 0.48);
+  border-color: rgba(122, 87, 69, 0.28);
 }
 
 .favorite-mark {
@@ -584,5 +736,155 @@ async function closeSession() {
   background: #9bbdb5;
   box-shadow: none;
   opacity: 1;
+}
+.feedback-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(18, 30, 27, 0.42);
+}
+
+.feedback-sheet {
+  width: 100%;
+  padding: 34rpx 32rpx calc(36rpx + env(safe-area-inset-bottom));
+  border-radius: 34rpx 34rpx 0 0;
+  box-sizing: border-box;
+  background: var(--jp-bg);
+  box-shadow: 0 -18rpx 50rpx rgba(18, 30, 27, 0.18);
+}
+
+.feedback-sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.feedback-title,
+.feedback-subtitle {
+  display: block;
+}
+
+.feedback-title {
+  color: var(--jp-text);
+  font-size: 34rpx;
+  line-height: 44rpx;
+  font-weight: 900;
+}
+
+.feedback-subtitle {
+  margin-top: 6rpx;
+  color: var(--jp-text-secondary);
+  font-size: 24rpx;
+  line-height: 34rpx;
+  font-weight: 700;
+}
+
+.feedback-close {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 999rpx;
+  color: var(--jp-text-secondary);
+  background: var(--jp-surface-soft);
+  font-size: 34rpx;
+  line-height: 60rpx;
+  font-weight: 700;
+}
+
+.feedback-type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14rpx;
+}
+
+.feedback-type-chip {
+  height: 68rpx;
+  border-radius: 999rpx;
+  color: var(--jp-text-secondary);
+  background: var(--jp-surface);
+  border: 1rpx solid var(--jp-border);
+  font-size: 24rpx;
+  line-height: 68rpx;
+  font-weight: 800;
+}
+
+.feedback-type-chip.active {
+  color: #fff;
+  background: var(--jp-primary);
+  border-color: var(--jp-primary);
+}
+
+.feedback-textarea {
+  width: 100%;
+  min-height: 180rpx;
+  margin-top: 22rpx;
+  padding: 22rpx;
+  border-radius: 26rpx;
+  box-sizing: border-box;
+  color: var(--jp-text);
+  background: var(--jp-surface);
+  border: 1rpx solid var(--jp-border);
+  font-size: 28rpx;
+  line-height: 42rpx;
+}
+
+.feedback-actions {
+  margin-top: 22rpx;
+  display: flex;
+  gap: 16rpx;
+}
+
+.feedback-cancel,
+.feedback-submit {
+  flex: 1;
+  height: 82rpx;
+  border-radius: 999rpx;
+  font-size: 28rpx;
+  line-height: 82rpx;
+  font-weight: 900;
+}
+
+.feedback-cancel {
+  color: var(--jp-primary);
+  background: rgba(255, 255, 255, 0.62);
+  border: 1rpx solid #bfc9c5;
+}
+
+.feedback-submit {
+  color: #fff;
+  background: var(--jp-primary);
+  box-shadow: var(--jp-shadow-primary);
+}
+
+.feedback-submit[disabled] {
+  color: rgba(255, 255, 255, 0.86);
+  background: #9bbdb5;
+  box-shadow: none;
+}
+
+.feedback-action {
+  color: #665f34;
+  background: rgba(214, 204, 152, 0.24);
+  border-color: rgba(102, 95, 52, 0.22);
+}
+
+.feedback-mark {
+  width: 30rpx;
+  height: 30rpx;
+  border-radius: 999rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: #665f34;
+  font-size: 20rpx;
+  line-height: 30rpx;
+  font-weight: 900;
 }
 </style>

@@ -15,23 +15,37 @@
 - 返回项类型：`WrongQuestionItem`，包含 `question`、`wrongCount`、`lastWrongAnswer`、`lastWrongAt`、`mastered`。
 - `question` 使用 `formatQuestion`，应与 `/questions/practice` 的题目结构保持一致。
 
-## 待确认或待开发 API
-
 ### 学习进度页
 
-- 当前没有专门的进度统计 API。
-- 需要确认统计口径：累计答题、正确率、错题数、连续天数、按题型掌握度、按等级掌握度、近 7 天趋势等。
-- 可考虑新增 `GET /progress/summary` 或 `GET /users/me/progress`。
+- `GET /progress/summary`：返回当前用户学习进度汇总。
+- 返回项类型：`ProgressSummary`，包含 `overview`、`recentDays`、`categoryMastery`。
+- 当前统计口径：
+  - `totalAnswered`、`correctCount`、`accuracy` 来自 `AnswerRecord`。
+  - `wrongQuestionCount` 来自未掌握且题目已发布未删除的 `WrongQuestion`。
+  - `recentDays` 固定补齐最近 7 天。
+  - `categoryMastery` 当前展示文字词汇、语法、阅读三类。
+  - `streakDays` 按服务端 UTC 日期向前连续有答题记录的天数计算。
 
 ### 收藏题
 
-- Prisma 已有 `FavoriteQuestion` 模型，前端有收藏入口和收藏页占位，但收藏题 API 尚未闭环。
-- 需要确认是否需要：收藏/取消收藏、收藏列表、收藏模式练习。
+- `GET /favorites`：返回当前用户收藏题列表，只包含已发布且未删除题目，按 `createdAt desc` 排序。
+- `POST /favorites/:questionId`：收藏题目，只允许收藏已发布且未删除题目。
+- `DELETE /favorites/:questionId`：取消收藏，接口对未收藏题保持幂等。
+- 收藏练习复用 `GET /questions/practice?mode=favorite` 的既有筛选逻辑。
+
 
 ### 题目反馈
 
-- Prisma 已有 `Feedback` 模型，个人中心有反馈记录入口占位。
-- 需要确认用户端提交反馈接口、反馈类型枚举、管理端处理流程。
+- `POST /feedback`：当前用户提交题目反馈，要求题目已发布且未删除。
+- `GET /feedback/my`：返回当前用户提交过的反馈记录，按 `createdAt desc` 排序。
+- 反馈类型：`stem_error`、`option_error`、`answer_error`、`explanation_error`、`translation_error`、`other`。
+- 反馈状态：`pending`、`processing`、`resolved`、`closed`。
+## 待确认或待开发 API
+
+### 管理端反馈处理
+
+- 用户端题目反馈闭环已完成。
+- 管理端反馈列表、处理备注和状态流转尚未开发。
 
 ### 管理端
 

@@ -26,13 +26,15 @@ const initialParams = Taro.getCurrentInstance().router?.params as
   | { mode?: string }
   | undefined;
 
+const initialMode: PracticeMode = initialParams?.mode === 'wrong' || initialParams?.mode === 'favorite'
+  ? initialParams.mode
+  : 'sequence';
+
 const level = ref<PracticeConfig['level']>(
   userStore.currentLevel === 'N4' ? 'N4' : 'N5',
 );
 const category = ref<PracticeCategory>('mixed');
-const mode = ref<PracticeMode>(
-  initialParams?.mode === 'wrong' ? 'wrong' : 'sequence',
-);
+const mode = ref<PracticeMode>(initialMode);
 const count = ref<PracticeConfig['count']>(10);
 const starting = ref(false);
 const navigationMetrics = ref(getDefaultNavigationMetrics());
@@ -75,7 +77,7 @@ const modes: Array<{
   { label: t('顺序'), value: 'sequence' },
   { label: t('随机'), value: 'random' },
   { label: t('错题'), value: 'wrong' },
-  { label: t('收藏'), value: 'favorite', disabled: true },
+  { label: t('收藏'), value: 'favorite' },
 ];
 
 const counts: PracticeConfig['count'][] = [10, 20, 30, 50];
@@ -135,7 +137,11 @@ async function startPractice() {
 
     if (questions.length === 0) {
       Taro.showToast({
-        title: mode.value === 'wrong' ? t('暂无错题可练习') : t('暂无可练习题目'),
+        title: mode.value === 'wrong'
+          ? t('暂无错题可练习')
+          : mode.value === 'favorite'
+            ? t('暂无收藏题可练习')
+            : t('暂无可练习题目'),
         icon: 'none',
       });
       return;

@@ -1,4 +1,4 @@
-﻿import { defineStore } from 'pinia';
+import { defineStore } from 'pinia';
 import type { PracticeConfig, Question } from '@jlpt-practice/shared';
 import type { FinishPracticeRecordResult } from '@/services/practice';
 import type { SubmitAnswerResult } from '@/types/practice';
@@ -52,6 +52,13 @@ export const usePracticeStore = defineStore('practice', {
     nextQuestion() {
       if (this.currentIndex < this.questions.length - 1) {
         this.currentIndex += 1;
+      }
+    },
+    setQuestionFavorite(questionId: string, isFavorite: boolean) {
+      const question = this.questions.find((item) => item.id === questionId);
+
+      if (question) {
+        question.isFavorite = isFavorite;
       }
     },
     finish(result: FinishPracticeRecordResult) {

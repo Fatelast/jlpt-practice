@@ -1,15 +1,20 @@
+import type {
+  CreateFeedbackPayload,
+  FeedbackItem,
+} from '@jlpt-practice/shared';
 import { request } from './request';
 
-export interface CreateFeedbackPayload {
-  questionId: string;
-  type: 'wrong_answer' | 'unclear_explanation' | 'typo' | 'difficulty' | 'other';
-  content: string;
-}
-
 export function createFeedback(data: CreateFeedbackPayload) {
-  return request<{ id: string }>({
+  return request<FeedbackItem>({
     url: '/feedback',
     method: 'POST',
     data,
+  });
+}
+
+export function getMyFeedback() {
+  return request<FeedbackItem[]>({
+    url: '/feedback/my',
+    method: 'GET',
   });
 }

@@ -26,7 +26,7 @@
 ## 小程序端结构
 
 - 页面注册位于 `apps/miniapp/src/app.config.ts`。
-- 当前注册页面：登录、首页、练习配置、做题、结果、进度、错题本、收藏、个人中心。
+- 当前注册页面：登录、首页、练习配置、做题、结果、进度、错题本、收藏、反馈记录、个人中心。
 - 微信开发工具应打开/加载 `apps/miniapp/dist` 构建产物。
 - 若新增页面后运行时报 `page ... is not found`，先确认 `src/app.config.ts` 和 `dist/app.json` 是否一致，并重新执行 `npm --workspace apps/miniapp run build:weapp`。
 - 底部导航组件：`apps/miniapp/src/components/BottomTabBar/index.vue`。
@@ -36,7 +36,7 @@
 ## 后端结构
 
 - 根模块：`server/src/app.module.ts`。
-- 已注册模块：`AuthModule`、`UsersModule`、`QuestionsModule`、`WrongQuestionsModule`、`PracticeRecordsModule`、`PrismaModule`。
+- 已注册模块：`AuthModule`、`UsersModule`、`QuestionsModule`、`FavoritesModule`、`FeedbackModule`、`WrongQuestionsModule`、`ProgressModule`、`PracticeRecordsModule`、`PrismaModule`。
 - 鉴权：受保护用户接口使用 `UserJwtGuard`，依赖 `AuthModule` 导出的 `JwtModule`。
 - 新增使用 `UserJwtGuard` 的模块必须导入 `AuthModule`，否则运行时会出现 `JwtService` 依赖解析失败。
 
@@ -46,13 +46,16 @@
 - 用户错题表：`WrongQuestion`，关键字段包括 `wrongCount`、`lastWrongAnswer`、`lastWrongAt`、`mastered`、`masteredAt`。
 - 答错题时由 `PracticeRecordsService.submitAnswer` 写入或更新 `wrong_questions`。
 - 题目返回结构通过 `server/src/modules/questions/question-presenter.ts` 的 `formatQuestion` 统一格式化。
+- 学习进度统计由 `ProgressModule` 提供，当前通过 `AnswerRecord` 和未掌握 `WrongQuestion` 计算，不新增数据表。
 
 ## 已完成的重要功能
 
 - 微信登录：已接入真实 `code2Session`，同时保留游客体验码本地 openid 逻辑。
 - 小程序核心页面：登录、首页、练习配置、做题、结果、错题本、进度、个人中心基础页。
 - 错题本闭环：后端提供错题列表和标记掌握接口；前端错题本接入真实数据；练习配置开放错题模式；结果页可跳转错题本。
-- 进度页当前为基础占位统计页，页面已注册，入口需要依赖最新 `dist/app.json`。
+- 进度页已接入真实数据：后端提供 GET /progress/summary，前端展示总览、近 7 天趋势和题型掌握度。
+- 收藏题闭环：后端提供收藏列表、收藏、取消收藏接口；做题页可收藏；收藏页接入真实数据；练习配置开放收藏模式。
+- 题目反馈闭环：后端提供提交反馈和我的反馈记录接口；做题页可提交反馈；个人中心可进入反馈记录页。
 
 ## 最近验证记录
 

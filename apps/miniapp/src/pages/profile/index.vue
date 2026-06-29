@@ -21,6 +21,7 @@ interface ProfileMenuItem {
   icon: AppIconName;
   tone: 'primary' | 'peach' | 'sand' | 'blue';
   badge?: string;
+  url?: string;
 }
 
 const userStore = useUserStore();
@@ -49,8 +50,9 @@ const stats = computed<ProfileStat[]>(() => [
   { label: t('收藏数'), value: 0, icon: 'book', tone: 'blue' },
 ]);
 const menuItems: ProfileMenuItem[] = [
+  { title: t('收藏题'), meta: t('查看已收藏题目'), icon: 'book', tone: 'blue', url: '/pages/favorites/index' },
   { title: t('练习记录'), meta: t('查看最近完成的练习'), icon: 'clock', tone: 'primary' },
-  { title: t('题目反馈记录'), meta: t('追踪提交过的问题'), icon: 'review', tone: 'peach' },
+  { title: t('题目反馈记录'), meta: t('追踪提交过的问题'), icon: 'review', tone: 'peach', url: '/pages/feedback/index' },
   { title: t('关于小程序'), meta: t('版本、说明与使用帮助'), icon: 'layers', tone: 'blue' },
   {
     title: t('切换等级'),
@@ -61,7 +63,12 @@ const menuItems: ProfileMenuItem[] = [
   },
 ];
 
-function handleMenuTap(item: ProfileMenuItem) {
+async function handleMenuTap(item: ProfileMenuItem) {
+  if (item.url) {
+    await Taro.navigateTo({ url: item.url });
+    return;
+  }
+
   Taro.showToast({ title: `${item.title}${t('即将开放')}`, icon: 'none' });
 }
 </script>

@@ -80,6 +80,75 @@ export interface WrongQuestionItem {
   mastered: boolean;
 }
 
+export interface ProgressOverview {
+  totalAnswered: number;
+  correctCount: number;
+  accuracy: number;
+  wrongQuestionCount: number;
+  todayAnswered: number;
+  streakDays: number;
+}
+
+export interface ProgressRecentDay {
+  date: string;
+  answeredCount: number;
+  correctCount: number;
+  wrongCount: number;
+  accuracy: number;
+}
+
+export interface ProgressCategoryMastery {
+  category: QuestionCategory;
+  answeredCount: number;
+  correctCount: number;
+  wrongCount: number;
+  accuracy: number;
+}
+
+export interface ProgressSummary {
+  overview: ProgressOverview;
+  recentDays: ProgressRecentDay[];
+  categoryMastery: ProgressCategoryMastery[];
+}
+
+
+export const FEEDBACK_TYPES = [
+  'stem_error',
+  'option_error',
+  'answer_error',
+  'explanation_error',
+  'translation_error',
+  'other',
+] as const;
+
+export type FeedbackType = typeof FEEDBACK_TYPES[number];
+
+export type FeedbackStatus = 'pending' | 'processing' | 'resolved' | 'closed';
+
+export interface FeedbackQuestionSnapshot {
+  id: string;
+  level: JLPTLevel;
+  category: QuestionCategory;
+  stem: string;
+}
+
+export interface CreateFeedbackPayload {
+  questionId: string;
+  type: FeedbackType;
+  content: string;
+}
+
+export interface FeedbackItem {
+  id: string;
+  questionId: string | null;
+  question: FeedbackQuestionSnapshot | null;
+  type: FeedbackType;
+  content: string;
+  status: FeedbackStatus;
+  handlerRemark: string | null;
+  createdAt: string;
+  handledAt: string | null;
+}
 export interface PracticeConfig {
   level: 'N5' | 'N4';
   category: PracticeCategory;

@@ -8,6 +8,7 @@ export default defineAppConfig({
     'pages/progress/index',
     'pages/wrong-book/index',
     'pages/favorites/index',
+    'pages/feedback/index',
     'pages/profile/index',
   ],
   window: {
